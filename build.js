@@ -2,9 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 const marked = require('marked');
+require('dotenv').config();
 
-// Create necessary directories if they don't exist
-const contentDir = path.join(process.cwd(), 'content/blog');
+// Get directory paths from .env or use defaults
+const contentDir = path.join(process.cwd(), process.env.CONTENT_FOLDER || 'content/blog');
 const apiDir = path.join(process.cwd(), 'public/blog');
 
 if (!fs.existsSync(contentDir)) {

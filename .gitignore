@@ -1,0 +1,46 @@
+# Node dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build output
+/dist
+/build
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Netlify local development
+.netlify/
+
+# Generated content files
+/content/blog
+/public/blog/*.json
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.claude
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
