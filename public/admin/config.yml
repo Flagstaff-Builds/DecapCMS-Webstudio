@@ -1,0 +1,29 @@
+backend:
+  name: github
+  repo: username/repo-name # CHANGE THIS TO YOUR GITHUB USERNAME/REPO
+  branch: main
+
+# Media files will be stored in the repo under images/uploads
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+# Enable the editorial workflow (drafts, review, publish)
+publish_mode: editorial_workflow
+
+# Set site URL (replace with your netlify site URL)
+site_url: https://your-site-url.netlify.app
+display_url: https://your-site-url.netlify.app
+
+# Collection for blog posts
+collections:
+  - name: "blog"
+    label: "Blog"
+    folder: "content/blog"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Publish Date", name: "date", widget: "datetime"}
+      - {label: "Featured Image", name: "featured_image", widget: "image", required: false}
+      - {label: "Description", name: "description", widget: "text"}
+      - {label: "Body", name: "body", widget: "markdown"}
