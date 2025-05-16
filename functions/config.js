@@ -6,7 +6,6 @@ backend:
   name: git-gateway
   branch: ${vars.GITHUB_BRANCH}
   accept_roles: [admin, editor]
-  squash_merges: true
 
 # Media files will be stored in the repo under images/uploads
 media_folder: "${vars.MEDIA_FOLDER}"

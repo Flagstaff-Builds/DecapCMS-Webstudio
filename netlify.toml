@@ -11,7 +11,14 @@
   status = 301
   force = true
 
-# Admin redirects
+# Use dynamic config.yml from function - MUST be before the general admin redirect
+[[redirects]]
+  from = "/admin/config.yml"
+  to = "/.netlify/functions/config"
+  status = 200
+  force = true
+
+# Admin redirects (general rule comes AFTER specific rules)
 [[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
@@ -29,12 +36,6 @@
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
-
-# Use dynamic config.yml from function
-[[redirects]]
-  from = "/admin/config.yml"
-  to = "/.netlify/functions/config"
   status = 200
 
 [build.environment]
