@@ -2,11 +2,7 @@
   publish = "public"
   command = "npm run build"
 
-# Redirect for Netlify Identity
-[[redirects]]
-  from = "/.netlify/identity"
-  to = "https://decapcms-webstudio.netlify.app/.netlify/identity"
-  status = 200
+# Netlify Identity is handled automatically by Netlify
 
 # Redirect for identity tokens to admin page
 [[redirects]]
