@@ -3,6 +3,10 @@ title: Connecting Decap CMS to Webstudio
 slug: decap-to-webstudio
 excerpt: Using a git based CMS with Webstudio
 html_content: |-
+  ## Why?
+
+  People like free stuff... why not a free CMS?!
+
   This article is to help users connect Decap to Webstudio easily.
 
   ## Huh?
