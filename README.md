@@ -1,47 +1,81 @@
-# Simple Blog with Decap CMS for Webstudio
+# No-Code Blog Solution for Webstudio
 
-This package contains everything you need to set up a simple blog with Decap CMS that connects to Webstudio. This solution allows you to manage your blog content through a user-friendly admin interface while seamlessly integrating with your Webstudio site.
+## Table of Contents
+- [Why You'll Love This](#why-youll-love-this)
+- [How It Works](#how-it-works)
+- [Quick Setup](#quick-setup)
+  - [Step 1: Get the Code](#step-1-get-the-code)
+  - [Step 2: Deploy to Netlify](#step-2-deploy-to-netlify)
+  - [Step 3: Configure Environment Variables](#step-3-configure-environment-variables)
+  - [Step 4: Set Up Authentication](#step-4-set-up-authentication)
+  - [Step 5: Add Blog Posts](#step-5-add-blog-posts)
+  - [Step 6: Connect to Webstudio](#step-6-connect-to-webstudio)
+- [Content Model](#content-model)
+- [Troubleshooting](#troubleshooting)
 
-## What's Included
+---
 
-- A simple CMS to manage your blog posts
-- Automatic conversion of your blog posts to JSON format that Webstudio can use
-- Easy deployment to Netlify (free hosting)
-- Environment variable-based configuration for easy setup
-- Step-by-step instructions for non-technical users
+Welcome to your simple, designer-friendly blog solution for Webstudio. This package lets you manage your blog content through an easy-to-use interface, while seamlessly displaying it on your Webstudio website. **No coding required.**
+
+## Why You'll Love This
+
+- **Easy Content Management**: Write and edit blog posts using a clean, intuitive interface (Decap CMS)
+- **Perfect for Designers**: No need to touch code - focus on creating great content
+- **Seamless Webstudio Integration**: Connect your blog to Webstudio with just a few clicks
+- **Free Hosting**: Deploy everything to Netlify at no cost
+- **Mobile-Friendly**: Manage your blog from anywhere, on any device
+- **Beautiful by Default**: Clean, responsive design that looks great out of the box
+
+## How It Works
+
+1. You write blog posts in a simple editor (similar to a Word document)
+2. The system automatically formats everything for the web
+3. Your Webstudio site displays the results
+4. No databases to manage or complex setup required
+
+---
 
 ## Quick Setup (Recommended)
 
-### Step 1: Create a GitHub Account and Repository
+### Step 1: Get the Code
 
-If you don't have a GitHub account:
-1. Go to [GitHub.com](https://github.com) and sign up
-2. Verify your email address
+Choose the option that works best for you:
 
-Create a new repository:
-1. Click the "+" icon in the top right corner
-2. Select "New repository"
-3. Name it something like "my-blog-cms"
-4. Make sure it's set to "Public"
-5. Click "Create repository"
+#### Option A: Fork on GitHub (Recommended for most users)
+1. Click the "Fork" button at the top-right of [this repository](https://github.com/Flagstaff-Builds/DecapCMS-Webstudio)
+2. Wait for the forking process to complete
+3. Skip to [Step 2: Deploy to Netlify](#step-2-deploy-to-netlify)
 
-### Step 2: Upload These Files to GitHub
-
-1. On your new repository page, click "Add file" then "Upload files"
-2. Drag and drop all the files from this package (or use the file picker)
-3. At the bottom, add a commit message like "Initial setup"
-4. Click "Commit changes"
-
-### Step 3: Create a .env File
-
-Create a `.env` file with your configuration (you can copy and modify the `.env.example` file):
-
+#### Option B: Clone Locally (For developers)
+```bash
+git clone https://github.com/Flagstaff-Builds/DecapCMS-Webstudio.git
+cd DecapCMS-Webstudio
 ```
+Then continue with the steps below.
+
+### Step 2: Deploy to Netlify
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/your-username/DecapCMS-Webstudio)
+
+1. Click the "Deploy to Netlify" button above
+2. Sign in with your GitHub/GitLab/Bitbucket account
+3. Follow the prompts to connect your repository
+4. In the deployment settings, verify these are set:
+   - Build command: `npm run build`
+   - Publish directory: `public`
+5. Click "Deploy site"
+
+### Step 3: Configure Environment Variables
+
+1. In your Netlify dashboard, go to "Site settings" > "Environment variables"
+2. Add these variables (replace with your info):
+
+```env
 # Repository configuration
 GITHUB_BRANCH=main
 
-# Site information
-SITE_TITLE=YOUR-SITE-TITLE
+# Site information (use quotes for titles with spaces)
+SITE_TITLE="My Awesome Blog"
 SITE_URL=https://YOUR-SITE.netlify.app
 
 # Media and content settings
@@ -50,57 +84,9 @@ PUBLIC_FOLDER=/images/uploads
 CONTENT_FOLDER=content/blog
 ```
 
-Replace the values with your own information:
-- `GITHUB_BRANCH`: The branch to use for content (usually main)
-- `SITE_TITLE`: Your site title
-- `SITE_URL`: The URL where your site will be hosted (Netlify will provide this)
+> **Tip**: You can use spaces in your site title by putting it in quotes, like this: `SITE_TITLE="My Awesome Blog"`
 
-> **Important**: When you set up Netlify, you will need to add these same environment variables to your Netlify site settings.
-
-### Step 4: Test Your Site Locally (Optional)
-
-You can test your site locally before deploying:
-
-1. Install dependencies:
-   ```
-   npm install
-   ```
-
-2. Start the local development server:
-   ```
-   npm run dev
-   ```
-
-3. Open http://localhost:3000/admin/ in your browser
-
-### Step 5: Deploy to Netlify
-
-1. Go to [Netlify.com](https://netlify.com) and sign up (you can use your GitHub account)
-2. Click "Add new site" then "Import an existing project"
-3. Select GitHub and authorize Netlify to access your repositories
-4. Find and select your repository
-5. In the deploy settings:
-   - Build command: `npm run build`
-   - Publish directory: `public`
-6. Click "Deploy site"
-
-7. **Important**: Set up environment variables
-   - Once your site is deployed, go to Site settings > Environment variables
-   - Add all the variables from your `.env` file
-   - Make sure to include all variables: GITHUB_BRANCH, SITE_TITLE, SITE_URL, MEDIA_FOLDER, PUBLIC_FOLDER, and CONTENT_FOLDER
-   - Click "Save" and trigger a new deploy
-
-   Detailed steps for adding environment variables in Netlify:
-   1. Go to your Netlify dashboard and select your site
-   2. Click on "Site settings" in the top navigation
-   3. In the left sidebar, click on "Environment variables"
-   4. For each variable in your `.env` file, click "Add a variable"
-   5. Enter the key (e.g., `GITHUB_BRANCH`) and its value
-   6. After adding all variables, go to the "Deploys" tab and click "Trigger deploy" > "Deploy site"
-
-> **Pro Tip**: Your site now uses environment variables instead of hardcoded configuration, making it much easier to maintain and update!
-
-### Step 6: Set Up Authentication
+### Step 4: Set Up Authentication
 
 1. On your Netlify site dashboard, go to "Site settings" > "Identity"
 2. Click "Enable Identity" (netlify Identity, it's deprecated but it works)
@@ -108,42 +94,50 @@ You can test your site locally before deploying:
 4. Under "Services" > "Git Gateway", click "Enable Git Gateway"
    - This allows users to access your repository content without GitHub accounts
    - Works with both public and private repositories
+
 5. **Critical**: Configure email templates
    - Go to "Site settings" > "Identity" > "Emails"
    - Click on "Invitation template"
    - In the template, change the URL pattern from `{{ .SiteURL }}/#invite_token={{ .Token }}` to `{{ .SiteURL }}/admin/#invite_token={{ .Token }}`
    - This ensures invitation links point directly to the admin area
    - Click "Save"
-   
-   > **Special note about invitation links**: The system is configured to redirect invitation links to the admin area automatically. If users still encounter "page not found" errors when clicking invitation links, have them manually add "/admin" before the "#" in the URL. For example, change `https://your-site.netlify.app/#invite_token=xyz` to `https://your-site.netlify.app/admin/#invite_token=xyz`.
+
 6. Go back to the "Identity" tab and click "Invite users"
 7. Enter your email address and click "Send"
 8. Check your email and accept the invitation
 
-### Step 5: Connect to Webstudio
 
-1. Log in to Webstudio
-2. In your project, click on "Variables" in the left sidebar
-3. Click the "+" button and select "Resource" to add a new resource variable
-4. Configure the resource:
-   - Name: `blogPosts` (you can choose any name)
-   - URL: `https://your-netlify-site-name.netlify.app/blog/index.json` (replace with your actual Netlify site URL)
-   - Method: `GET`
-   - Response Type: `JSON`
-5. Click "Save"
-6. Now you can use this resource variable in your Webstudio project to display blog posts
 
-> **Important**: Make sure to replace `your-netlify-site-name.netlify.app` with your actual Netlify domain in the URL field. You can find this in your Netlify dashboard.
-
-### Step 6: Add Blog Posts
+### Step 5: Add Blog Posts
 
 1. Go to `https://your-netlify-site-name.netlify.app/admin/` (replace with your Netlify site URL)
-2. Log in with your email (the one you invited in Step 4)
+2. Log in with your email (the one you were invited with)
 3. Click "New Blog" to create a new blog post
-4. Add your content and click "Save"
-5. Click "Publish" to make the post live
+4. Add your content including:
+   - Title
+   - Excerpt (optional)
+   - Main content (supports Markdown)
+   - Featured image (required)
+   - Category and tags (optional)
+5. Click "Save" and then "Publish" to make the post live
 
-After publishing, Netlify will automatically rebuild your site and update the JSON files that Webstudio uses.
+### Step 6: Connect to Webstudio
+
+1. In your Webstudio project, add a new Collection called "Blog Posts"
+2. Add these fields to your collection:
+   - **Title** (Text) - The title of your blog post
+   - **Slug** (Text) - URL-friendly version of the title (check "unique")
+   - **Date** (Date & Time) - Publication date
+   - **Excerpt** (Long Text) - Short summary for previews
+   - **Body** (Rich Text) - Main content of your post (Markdown supported)
+   - **Image** (Image) - Featured image for the post (required)
+   - **Author** (Text) - Optional
+   - **Category** (Text) - Optional, for organization
+   - **Tags** (List of Text) - Optional, for better discoverability
+
+3. In your Webstudio page, add a Collection List and connect it to your Blog Posts collection
+4. Style the list items to display your blog posts
+5. Create a dynamic route for individual blog posts using the slug
 
 ## Content Model
 
@@ -178,6 +172,36 @@ Manage information about content creators:
 - **Website**: Author's website URL (optional)
 - **Twitter**: Author's Twitter handle (optional)
 - **Bio**: Short biography (optional)
+
+## Troubleshooting
+
+### "Page not found" Error on Netlify
+
+If you encounter a "Page not found" error when visiting your Netlify site, check the following:
+
+1. **Redirects Configuration**: Make sure your `netlify.toml` file has the correct redirects configuration. The general redirect rule should not have any role-based conditions:
+
+```toml
+# General redirect for SPA - this should be LAST in the redirect list
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+2. **Environment Variables**: Ensure all environment variables are correctly set in your Netlify dashboard:
+   - SITE_URL should be your Netlify domain (e.g., `https://your-site.netlify.app`)  
+   - LOCAL_BACKEND should be set to `false` for production
+
+3. **Deployment**: After making any changes to your configuration, trigger a new deployment from the Netlify dashboard.
+
+### Admin Access Issues
+
+If you're having trouble accessing the admin area:
+
+1. Make sure Git Gateway is enabled in your Netlify Identity settings
+2. Check that your invitation links are correctly formatted to point to `/admin/#invite_token=`
+3. Try manually adding `/admin` to the URL if you're redirected to a 404 page
 
 ## How to Display Blog Posts in Webstudio
 
@@ -214,41 +238,40 @@ For individual blog posts, you'll need to:
 ### Access Related Content
 
 You can also create dedicated pages for categories, tags, and authors by fetching their respective endpoints:
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-- Categories: `https://your-netlify-site-name.netlify.app/categories/index.json`
-- Tags: `https://your-netlify-site-name.netlify.app/tags/index.json`
-- Authors: `https://your-netlify-site-name.netlify.app/authors/index.json`
+2. Create a `.env` file (copy from the example):
+   ```bash
+   cp .env.example .env
+   ```
 
-## Environment Variables Explained
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-This project uses environment variables to make configuration flexible. Here's what each variable does:
+4. Open your browser to `http://localhost:3000`
 
-- `GITHUB_BRANCH`: The branch where your content will be stored (usually `main`)
-- `SITE_TITLE`: The title of your site displayed in the CMS
-- `SITE_URL`: The full URL where your site is hosted (important for proper linking)
-- `MEDIA_FOLDER`: Where media files are stored in your repository (defaults to `images/uploads`)
-- `PUBLIC_FOLDER`: The public path to access media files (defaults to `/images/uploads`)
-- `CONTENT_FOLDER`: Where blog post content is stored in your repository (defaults to `content/blog`)
-
-> **Important**: These environment variables must be added to Netlify for the CMS to work properly. They control how the CMS interacts with your GitHub repository and how content is structured.
-
-> **Note on Directories**: The system will automatically create the necessary directories (`images/uploads` and `content/blog`) if they don't exist. You don't need to manually create them.
+> ⚠️ **Note**: Local testing is great for previewing changes, but remember to push your changes to GitHub to see them on your live site.
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Environment Variables**: Make sure your environment variables are set correctly:
-   - For local development: They should be in the `.env` file at the root of your project
+1. **Environment Variables**:
+   - For local development: Update the `.env` file at the root of your project
    - For Netlify: Add them in the Netlify dashboard under Site settings > Environment variables
 
 2. **Required Environment Variables**:
-   ```
+   ```env
    # Repository configuration
    GITHUB_BRANCH=main
 
-   # Site information
-   SITE_TITLE=YOUR-SITE-TITLE
+   # Site information (use quotes for titles with spaces)
+   SITE_TITLE="My Awesome Blog"
    SITE_URL=https://YOUR-SITE.netlify.app
 
    # Media and content settings
@@ -256,17 +279,18 @@ This project uses environment variables to make configuration flexible. Here's w
    PUBLIC_FOLDER=/images/uploads
    CONTENT_FOLDER=content/blog
    ```
-   
-   > Note: These are the only environment variables needed for the current configuration.
 
-3. **Netlify Identity**:
-   - If you can't log in to the admin panel, check that Netlify Identity is properly enabled and that you've accepted the invitation email.
-   - If clicking on the invitation link gives you a "page not found" error:
-     a. **Most important fix**: Make sure you've updated the email templates as described in Step 6 of the setup process
-     b. The invitation URL should look like `https://your-site.netlify.app/admin/#invite_token=xyz` (notice `/admin/#` in the URL)
-     c. If you received an invitation with the wrong URL format (like `https://your-site.netlify.app/#invite_token=xyz`), modify the URL by adding `/admin` before the `#`
-     d. Try going directly to your admin URL (https://your-site.netlify.app/admin/) and logging in
-   - This is a common issue with Netlify Identity that's fixed by properly configuring the email templates
+3. **Admin Access**:
+   - Make sure you've enabled Identity in your Netlify site settings
+   - Check your email (including spam) for the invitation
+   - If you're still having trouble:
+     1. Go to your Netlify site settings > Identity > Emails
+     2. Verify the invitation template has the correct URL format:
+        - It should be `{{ .SiteURL }}/admin/#invite_token={{ .Token }}`
+        - Not `{{ .SiteURL }}/#invite_token={{ .Token }}`
+   - If you received an invitation with the wrong URL format, manually add "/admin" before the "#" in the URL
+     - Change: `https://your-site.netlify.app/#invite_token=xyz`
+     - To: `https://your-site.netlify.app/admin/#invite_token=xyz`
 
 4. **Custom Domain**: If you're using a custom domain, make sure to update the `SITE_URL` environment variable.
 

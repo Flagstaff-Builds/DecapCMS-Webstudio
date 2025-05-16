@@ -2,13 +2,11 @@
   publish = "public"
   command = "npm run build"
 
-# Handle authentication hash routes for Netlify Identity
+# General redirect for SPA - this should be LAST in the redirect list
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
-  conditions = {Role = ["admin"]}
 
 # Redirect for identity tokens that should go to the admin page
 [[redirects]]
