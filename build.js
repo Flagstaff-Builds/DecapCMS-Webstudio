@@ -82,15 +82,18 @@ const posts = blogFiles.map(filename => {
   // Parse frontmatter and content
   const { data, content } = matter(fileContent);
   
-  // Use html_content from frontmatter if available, otherwise convert markdown to HTML
-  let htmlContent = '';
+  // Get the markdown content
+  let markdownContent = '';
   if (data.html_content) {
-    // Use the html_content from frontmatter
-    htmlContent = data.html_content;
+    // If html_content exists in frontmatter, use that as markdown
+    markdownContent = data.html_content;
   } else {
-    // Convert markdown to HTML
-    htmlContent = marked.parse(content);
+    // Otherwise use the content from the markdown file
+    markdownContent = content;
   }
+  
+  // Store both markdown and HTML versions
+  const htmlContent = marked.parse(markdownContent);
   
   // Process relationships
   let categoryData = null;
@@ -117,6 +120,7 @@ const posts = blogFiles.map(filename => {
     slug: data.slug || filename.replace(/\.md$/, ''),
     title: data.title || 'Untitled',
     excerpt: data.excerpt || '',
+    markdown_content: markdownContent,
     html_content: htmlContent,
     published_at: data.published_at || new Date().toISOString(),
     category: categoryData,
