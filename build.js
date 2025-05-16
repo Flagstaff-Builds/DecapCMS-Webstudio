@@ -82,8 +82,15 @@ const posts = blogFiles.map(filename => {
   // Parse frontmatter and content
   const { data, content } = matter(fileContent);
   
-  // Convert markdown to HTML
-  const htmlContent = marked.parse(content);
+  // Use html_content from frontmatter if available, otherwise convert markdown to HTML
+  let htmlContent = '';
+  if (data.html_content) {
+    // Use the html_content from frontmatter
+    htmlContent = data.html_content;
+  } else {
+    // Convert markdown to HTML
+    htmlContent = marked.parse(content);
+  }
   
   // Process relationships
   let categoryData = null;
