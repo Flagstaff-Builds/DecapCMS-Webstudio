@@ -17,6 +17,12 @@
   to = "/admin/index.html"
   status = 200
 
+# Git Gateway redirects
+[[redirects]]
+  from = "/.netlify/git/*"
+  to = "https://api.netlify.com/.netlify/git/:splat"
+  status = 200
+
 # Serve blog pages
 [[redirects]]
   from = "/blog/*"
