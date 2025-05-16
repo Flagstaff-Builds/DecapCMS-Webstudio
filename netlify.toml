@@ -2,23 +2,35 @@
   publish = "public"
   command = "npm run build"
 
-# General redirect for SPA - this should be LAST in the redirect list
+# Redirect for Netlify Identity
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/.netlify/identity"
+  to = "https://decapcms-webstudio.netlify.app/.netlify/identity"
   status = 200
 
-# Redirect for identity tokens that should go to the admin page
+# Redirect for identity tokens to admin page
 [[redirects]]
   from = "/#invite_token=*"
   to = "/admin/#invite_token=:splat"
-  status = 302
+  status = 301
   force = true
 
-# Serve blog pages without requiring a page reload
+# Admin redirects
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+
+# Serve blog pages
 [[redirects]]
   from = "/blog/*"
   to = "/blog/:splat"
+  status = 200
+
+# SPA fallback - must be last
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
 
 # Use dynamic config.yml from function
