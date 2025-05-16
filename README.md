@@ -114,6 +114,8 @@ You can test your site locally before deploying:
    - In the template, change the URL pattern from `{{ .SiteURL }}/#invite_token={{ .Token }}` to `{{ .SiteURL }}/admin/#invite_token={{ .Token }}`
    - This ensures invitation links point directly to the admin area
    - Click "Save"
+   
+   > **Special note about invitation links**: The system is configured to redirect invitation links to the admin area automatically. If users still encounter "page not found" errors when clicking invitation links, have them manually add "/admin" before the "#" in the URL. For example, change `https://your-site.netlify.app/#invite_token=xyz` to `https://your-site.netlify.app/admin/#invite_token=xyz`.
 6. Go back to the "Identity" tab and click "Invite users"
 7. Enter your email address and click "Send"
 8. Check your email and accept the invitation

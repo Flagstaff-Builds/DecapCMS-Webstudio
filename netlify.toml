@@ -2,11 +2,28 @@
   publish = "public"
   command = "npm run build"
 
+# Handle authentication hash routes for Netlify Identity
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+  conditions = {Role = ["admin"]}
+
+# Redirect for identity tokens that should go to the admin page
+[[redirects]]
+  from = "/#invite_token=*"
+  to = "/admin/#invite_token=:splat"
+  status = 302
+  force = true
+
+# Serve blog pages without requiring a page reload
 [[redirects]]
   from = "/blog/*"
   to = "/blog/:splat"
   status = 200
 
+# Use dynamic config.yml from function
 [[redirects]]
   from = "/admin/config.yml"
   to = "/.netlify/functions/config"
@@ -17,3 +34,8 @@
 
 [functions]
   directory = "functions"
+
+# Enable Netlify Identity but only allow invite-based signups
+[identity]
+  enable = true
+  invite_only = true

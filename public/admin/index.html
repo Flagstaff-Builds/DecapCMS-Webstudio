@@ -17,10 +17,27 @@
     <script>
       if (window.netlifyIdentity) {
         window.netlifyIdentity.on("init", user => {
+          // Check for token in URL
+          const hash = window.location.hash;
+          const hasInviteToken = hash && hash.includes('invite_token=');
+          
+          if (hasInviteToken) {
+            // If we have an invite token, open the widget
+            window.netlifyIdentity.open('signup');
+          }
+          
           if (!user) {
             window.netlifyIdentity.on("login", () => {
               document.location.href = "/admin/";
             });
+          }
+        });
+        
+        // Handle error case - if token verification fails
+        window.netlifyIdentity.on("error", err => {
+          console.error("Netlify Identity error:", err);
+          if (err.message && err.message.includes('token')) {
+            alert("There was an issue with your invitation link. Please contact the site administrator.");
           }
         });
       }
