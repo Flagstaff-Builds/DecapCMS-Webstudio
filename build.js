@@ -23,6 +23,19 @@ function convertRelativePathsToAbsolute(markdownContent) {
   });
 }
 
+// Function to convert a relative image path to an absolute URL
+function convertImagePathToAbsoluteUrl(relativePath) {
+  // Only process paths that start with a slash
+  if (relativePath && relativePath.startsWith('/')) {
+    // Ensure the site URL doesn't have a trailing slash before concatenating
+    const baseUrl = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
+    // Create the absolute URL
+    return `${baseUrl}${relativePath}`;
+  }
+  // Return the original path if it's not a relative path starting with a slash
+  return relativePath;
+}
+
 // Root directories
 const contentRootDir = path.join(process.cwd(), 'content');
 const apiRootDir = path.join(process.cwd(), 'public');
@@ -170,12 +183,15 @@ const posts = blogFiles.map(filename => {
       .map(authorSlug => authorMap[authorSlug]);
   }
   
+  // Convert feature image path to absolute URL if it exists
+  const featureImageUrl = data.feature_image ? convertImagePathToAbsoluteUrl(data.feature_image) : '';
+
   // Build the post object
   return {
     slug: data.slug || filename.replace(/\.md$/, ''),
     title: data.title || 'Untitled',
     excerpt: data.excerpt || '',
-    feature_image: data.feature_image || '',
+    feature_image: featureImageUrl,
     markdown_content: processedMarkdownContent,
     html_content: htmlContent,
     published_at: data.published_at || new Date().toISOString(),
