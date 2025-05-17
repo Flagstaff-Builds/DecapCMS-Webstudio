@@ -2,8 +2,7 @@
 title: Getting Started with Decap CMS and Webstudio
 slug: getting-started
 excerpt: Learn how to use this template to create a blog with Decap CMS and Webstudio.
-html_content: >
-  
+html_content: >-
   ## Getting Started with Decap CMS and Webstudio
 
 
@@ -19,11 +18,11 @@ html_content: >
   ### Text Formatting
 
 
-  - **Bold text** using `**double asterisks**`
+  * **Bold text** using `**double asterisks**`
 
-  - *Italic text* using `*single asterisks*`
+  * *Italic text* using `*single asterisks*`
 
-  - ~~Strikethrough~~ using `~~double tildes~~`
+  * ~~Strikethrough~~ using `~~double tildes~~`
 
 
   ### Lists
@@ -31,14 +30,16 @@ html_content: >
 
   Unordered list:
 
-  - Item 1
 
-  - Item 2
+  * Item 1
 
-  - Item 3
+  * Item 2
+
+  * Item 3
 
 
   Ordered list:
+
 
   1. First item
 
@@ -54,6 +55,7 @@ html_content: >
 
 
   Code block:
+
 
   ```javascript
 
