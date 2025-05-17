@@ -42,7 +42,7 @@ This guide explains how to connect your Decap CMS blog to a Webstudio site.
 4. Access related data with:
    - `blog.category.name` for category name
    - `blog.tags` (array of tag objects with properties like `name`)
-   - `blog.authors` (array of author objects with properties like `name`, `image_url`, etc.)
+   - `blog.author` (author object with properties like `name`, `image_url`, etc.)
 
 
 ---
@@ -71,7 +71,7 @@ For individual blog posts, you'll need to:
    - `blogPost.data.published_at` for the publication date
    - `blogPost.data.category.name` for the category
    - `blogPost.data.tags` for the tags (this is an array so you'll need to use a collection to display them)
-   - `blogPost.data.authors` for the authors
+   - `blogPost.data.author` for the post author (with properties like `name`, `image_url`, etc.)
 
 ## Example Resource URLs
 

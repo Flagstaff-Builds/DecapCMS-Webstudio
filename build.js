@@ -176,11 +176,18 @@ const posts = blogFiles.map(filename => {
       .map(tagSlug => tagMap[tagSlug]);
   }
   
-  let authorData = [];
-  if (data.authors && Array.isArray(data.authors)) {
-    authorData = data.authors
-      .filter(authorSlug => authorMap[authorSlug])
-      .map(authorSlug => authorMap[authorSlug]);
+  // Process author (single author instead of array)
+  let authorData = null;
+  if (data.author && authorMap[data.author]) {
+    authorData = authorMap[data.author];
+  }
+  
+  // For backward compatibility with existing content that might use authors array
+  if (!authorData && data.authors && Array.isArray(data.authors) && data.authors.length > 0) {
+    const authorSlug = data.authors[0];
+    if (authorMap[authorSlug]) {
+      authorData = authorMap[authorSlug];
+    }
   }
   
   // Process feature image if it exists

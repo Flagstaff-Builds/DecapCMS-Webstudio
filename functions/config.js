@@ -58,14 +58,13 @@ collections:
         display_fields: ["name"]
         multiple: true
         required: false
-      - label: "Authors"
-        name: "authors"
+      - label: "Author"
+        name: "author"
         widget: "relation"
         collection: "authors"
         search_fields: ["name"]
         value_field: "slug"
         display_fields: ["name"]
-        multiple: true
         required: false
 
   - name: "categories"
