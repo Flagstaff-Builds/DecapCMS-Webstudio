@@ -104,9 +104,17 @@ function loadMarkdownFiles(dir) {
       const fileContent = fs.readFileSync(filePath, 'utf8');
       const { data } = matter(fileContent);
       
+      // Process any image URLs in the data
+      const processedData = { ...data };
+      
+      // Convert image_url to absolute URL if it exists and is a relative path
+      if (processedData.image_url && processedData.image_url.startsWith('/')) {
+        processedData.image_url = convertImagePathToAbsoluteUrl(processedData.image_url);
+      }
+      
       return {
-        ...data,
-        slug: data.slug || filename.replace(/\.md$/, '')
+        ...processedData,
+        slug: processedData.slug || filename.replace(/\.md$/, '')
       };
     });
 }
