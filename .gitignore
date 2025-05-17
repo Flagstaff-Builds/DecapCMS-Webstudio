@@ -20,8 +20,27 @@ yarn.lock
 
 # Generated content files
 public/images/
-/content/blog
 /public/blog/*.json
+/public/authors/*.json
+/public/categories/*.json
+/public/tags/*.json
+
+# But include these specific images
+!/images/uploads/webstudio.svg
+!/images/uploads/decap-cms.svg
+
+# Content files - ignore all content except sample files
+/content/authors/*
+!/content/authors/sample-author.md
+
+/content/blog/*
+!/content/blog/sample-post.md
+
+/content/categories/*
+!/content/categories/sample-category.md
+
+/content/tags/*
+!/content/tags/sample-tag.md
 
 # Log files
 npm-debug.log*
