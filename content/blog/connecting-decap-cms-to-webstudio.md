@@ -11,7 +11,7 @@ html_content: |-
 
   ## Huh?
 
-  And for some reason, here's a logo for appwrite!
+  And for some reason, here's a logo for appwrite! I just like it.
 
   ![appwrite logo](/images/uploads/appwrite.svg)
 published_at: 2025-05-16T17:23:00.000Z
