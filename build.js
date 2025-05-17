@@ -185,13 +185,23 @@ const posts = blogFiles.map(filename => {
   
   // Process feature image if it exists
   let featureImage = null;
-  if (data.feature_image && data.feature_image.url) {
-    // Create a new object with all the feature image properties
-    featureImage = {
-      ...data.feature_image,
-      // Convert the URL to an absolute URL
-      url: convertImagePathToAbsoluteUrl(data.feature_image.url)
-    };
+  if (data.feature_image) {
+    // Check if feature_image is a string (old format) or an object (new format)
+    if (typeof data.feature_image === 'string') {
+      // Old format: convert the string path to an object with url
+      featureImage = {
+        url: convertImagePathToAbsoluteUrl(data.feature_image),
+        alt: '',
+        title: ''
+      };
+    } else if (data.feature_image.url) {
+      // New format: create a new object with all the feature image properties
+      featureImage = {
+        ...data.feature_image,
+        // Convert the URL to an absolute URL
+        url: convertImagePathToAbsoluteUrl(data.feature_image.url)
+      };
+    }
   }
 
   // Build the post object
