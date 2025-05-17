@@ -32,6 +32,12 @@
   to = "/blog/:splat"
   status = 200
 
+# Serve images directly from the images directory
+[[redirects]]
+  from = "/images/*"
+  to = "/images/:splat"
+  status = 200
+
 # SPA fallback - must be last
 [[redirects]]
   from = "/*"

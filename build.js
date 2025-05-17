@@ -4,8 +4,8 @@ const matter = require('gray-matter');
 const marked = require('marked');
 require('dotenv').config();
 
-// Get the site URL from environment variables
-const SITE_URL = process.env.SITE_URL;
+// Get site URL from environment variables
+const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
 // Function to convert relative image paths to absolute URLs in markdown content
 function convertRelativePathsToAbsolute(markdownContent) {
