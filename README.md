@@ -4,6 +4,8 @@
 
 A straightforward blog setup that connects **Decap CMS** with **Webstudio**. It saves everything to **Git**, so your content stays versioned and clean. Non-technical users can log in, write posts, and publish — all through a simple editor.
 
+> **Credit**: This project was inspired by [minimal-decap-cms](https://github.com/walmello/minimal-decap-cms) by [walmello](https://github.com/walmello).
+
 | Features                          | How It Works                                 |
 |----------------------------------|----------------------------------------------|
 | Easy blog editor                 | Write posts in a simple, doc-style editor    |
@@ -76,6 +78,10 @@ SITE_URL=https://YOUR-NETLIFY-SITE.netlify.app
 MEDIA_FOLDER=images/uploads
 PUBLIC_FOLDER=/images/uploads
 CONTENT_FOLDER=content/blog
+
+# CMS configuration
+# Options: 'editorial_workflow', 'simple', or leave empty (defaults to 'simple')
+PUBLISH_MODE=simple
 ```
 
 ### Set Up Authentication
@@ -89,6 +95,18 @@ CONTENT_FOLDER=content/blog
 5. Go to the "Identity" tab and click "Invite users"
 6. Enter your email address and click "Send"
 7. Check your email and accept the invitation
+
+## Publish Mode Configuration
+
+Decap CMS supports different publishing workflows that can be configured using the `PUBLISH_MODE` environment variable:
+
+- **Editorial Workflow** (`PUBLISH_MODE=editorial_workflow`): Enables a workflow with draft, review, and publish states. This is useful for teams that need an approval process before content goes live.
+
+- **Simple** (`PUBLISH_MODE=simple`): Content is published immediately when saved, without going through a review process.
+
+- **Default** (empty or not set): Same as 'simple' - direct publishing without a workflow.
+
+You can configure the publish mode by setting the `PUBLISH_MODE` environment variable in your Netlify environment variables or in your local `.env` file.
 
 ## Documentation
 

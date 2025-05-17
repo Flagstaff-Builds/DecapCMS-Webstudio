@@ -11,8 +11,8 @@ backend:
 media_folder: "${vars.MEDIA_FOLDER}"
 public_folder: "${vars.PUBLIC_FOLDER}"
 
-# Enable the editorial workflow (drafts, review, publish)
-publish_mode: editorial_workflow
+# Publish mode configuration
+${vars.PUBLISH_MODE ? `publish_mode: ${vars.PUBLISH_MODE}` : '# publish_mode is not set (defaults to simple)'}
 
 # Set site URL
 site_url: ${vars.SITE_URL}
@@ -98,7 +98,8 @@ exports.handler = async function(event, context) {
       MEDIA_FOLDER: process.env.MEDIA_FOLDER || 'images/uploads',
       PUBLIC_FOLDER: process.env.PUBLIC_FOLDER || '/images/uploads',
       CONTENT_FOLDER: process.env.CONTENT_FOLDER || 'content/blog',
-      SITE_URL: process.env.SITE_URL
+      SITE_URL: process.env.SITE_URL,
+      PUBLISH_MODE: process.env.PUBLISH_MODE || ''
     };
     
     // Generate config using template function

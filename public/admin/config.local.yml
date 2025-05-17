@@ -6,8 +6,9 @@ backend:
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
-# Enable the editorial workflow (drafts, review, publish)
-publish_mode: editorial_workflow
+# Publish mode configuration
+# Comment out the line below to disable the editorial workflow
+# publish_mode: editorial_workflow
 
 # Collection for blog posts
 collections:
