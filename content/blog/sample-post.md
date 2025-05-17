@@ -2,6 +2,7 @@
 title: Getting Started with Decap CMS and Webstudio
 slug: getting-started
 excerpt: Learn how to use this template to create a blog with Decap CMS and Webstudio.
+feature_image: /images/uploads/image_fx_-4-.png
 html_content: >-
   ## Getting Started with Decap CMS and Webstudio
 
