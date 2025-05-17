@@ -29,7 +29,16 @@ collections:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Slug", name: "slug", widget: "string" }
       - { label: "Excerpt", name: "excerpt", widget: "text", required: false }
-      - { label: "Feature Image", name: "feature_image", widget: "image", required: false }
+      - label: "Feature Image"
+        name: "feature_image"
+        widget: "object"
+        required: false
+        fields:
+          - { label: "Image", name: "url", widget: "image", required: true }
+          - { label: "Alt Text", name: "alt", widget: "string", required: false }
+          - { label: "Title", name: "title", widget: "string", required: false }
+          - { label: "Width", name: "width", widget: "number", required: false, value_type: "int" }
+          - { label: "Height", name: "height", widget: "number", required: false, value_type: "int" }
       - { label: "HTML Content", name: "html_content", widget: "markdown" }
       - { label: "Published At", name: "published_at", widget: "datetime" }
       - label: "Category"

@@ -183,15 +183,23 @@ const posts = blogFiles.map(filename => {
       .map(authorSlug => authorMap[authorSlug]);
   }
   
-  // Convert feature image path to absolute URL if it exists
-  const featureImageUrl = data.feature_image ? convertImagePathToAbsoluteUrl(data.feature_image) : '';
+  // Process feature image if it exists
+  let featureImage = null;
+  if (data.feature_image && data.feature_image.url) {
+    // Create a new object with all the feature image properties
+    featureImage = {
+      ...data.feature_image,
+      // Convert the URL to an absolute URL
+      url: convertImagePathToAbsoluteUrl(data.feature_image.url)
+    };
+  }
 
   // Build the post object
   return {
     slug: data.slug || filename.replace(/\.md$/, ''),
     title: data.title || 'Untitled',
     excerpt: data.excerpt || '',
-    feature_image: featureImageUrl,
+    feature_image: featureImage,
     markdown_content: processedMarkdownContent,
     html_content: htmlContent,
     published_at: data.published_at || new Date().toISOString(),
