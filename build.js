@@ -175,6 +175,7 @@ const posts = blogFiles.map(filename => {
     slug: data.slug || filename.replace(/\.md$/, ''),
     title: data.title || 'Untitled',
     excerpt: data.excerpt || '',
+    feature_image: data.feature_image || '',
     markdown_content: processedMarkdownContent,
     html_content: htmlContent,
     published_at: data.published_at || new Date().toISOString(),

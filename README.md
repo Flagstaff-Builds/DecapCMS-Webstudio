@@ -9,6 +9,7 @@ A straightforward blog setup that connects **Decap CMS** with **Webstudio**. It 
 | Features                          | How It Works                                 |
 |----------------------------------|----------------------------------------------|
 | Easy blog editor                 | Write posts in a simple, doc-style editor    |
+| Feature images for posts         | Add images to your blog posts                |
 | No coding needed                 | Formatting and layout handled automatically  |
 | Connects to Webstudio            | Posts show up on your Webstudio site         |
 | Free hosting with Netlify        | No servers or databases to manage            |

@@ -33,6 +33,7 @@ This guide explains how to connect your Decap CMS blog to a Webstudio site.
 3. Inside the "**Collection**" component, add elements to display blog post information:
    - Add a Heading and bind its "**Text Content**" to `blog.title`
    - Add a Text component and bind its "**Text Content**" to `blog.excerpt`
+   - Add an Image component and bind its "**Source**" to `blog.feature_image` (if available)
    - Etc...
 4. Access related data with:
    - `blog.category.name` for category name
@@ -57,6 +58,7 @@ For individual blog posts, you'll need to:
 
 3. Add content and start binding data:
    - `blogPost.data.title` for the post title
+   - `blogPost.data.feature_image` for the post's feature image (if available)
    - `blogPost.data.html_content` for the rendered HTML content
    - `blogPost.data.published_at` for the publication date
    - `blogPost.data.category.name` for the category
