@@ -1,6 +1,11 @@
 ---
 title: From my phone
 slug: Phone
+feature_image:
+  url: /images/uploads/webstudio.svg
+  alt: Webstudio logo
+  width: 300
+  height: 300
 html_content: |-
   This is a test blog, written on my phone.
 
