@@ -4,6 +4,25 @@ const matter = require('gray-matter');
 const marked = require('marked');
 require('dotenv').config();
 
+// Get the site URL from environment variables
+const SITE_URL = process.env.SITE_URL;
+
+// Function to convert relative image paths to absolute URLs in markdown content
+function convertRelativePathsToAbsolute(markdownContent) {
+  // Regular expression to find markdown image syntax: ![alt text](/path/to/image.jpg)
+  const imageRegex = /!\[([^\]]*)\]\((\/[^\)]+)\)/g;
+  
+  // Replace relative paths with absolute URLs
+  return markdownContent.replace(imageRegex, (match, altText, relativePath) => {
+    // Ensure the site URL doesn't have a trailing slash before concatenating
+    const baseUrl = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
+    // Create the absolute URL
+    const absoluteUrl = `${baseUrl}${relativePath}`;
+    // Return the markdown image syntax with the absolute URL
+    return `![${altText}](${absoluteUrl})`;
+  });
+}
+
 // Root directories
 const contentRootDir = path.join(process.cwd(), 'content');
 const apiRootDir = path.join(process.cwd(), 'public');
@@ -92,8 +111,11 @@ const posts = blogFiles.map(filename => {
     markdownContent = content;
   }
   
+  // Convert relative image paths to absolute URLs in markdown content
+  const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
+  
   // Store both markdown and HTML versions
-  const htmlContent = marked.parse(markdownContent);
+  const htmlContent = marked.parse(processedMarkdownContent);
   
   // Process relationships
   let categoryData = null;
@@ -120,7 +142,7 @@ const posts = blogFiles.map(filename => {
     slug: data.slug || filename.replace(/\.md$/, ''),
     title: data.title || 'Untitled',
     excerpt: data.excerpt || '',
-    markdown_content: markdownContent,
+    markdown_content: processedMarkdownContent,
     html_content: htmlContent,
     published_at: data.published_at || new Date().toISOString(),
     category: categoryData,
