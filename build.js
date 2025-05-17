@@ -26,6 +26,8 @@ function convertRelativePathsToAbsolute(markdownContent) {
 // Root directories
 const contentRootDir = path.join(process.cwd(), 'content');
 const apiRootDir = path.join(process.cwd(), 'public');
+const imagesDir = path.join(process.cwd(), 'images');
+const publicImagesDir = path.join(apiRootDir, 'images');
 
 // Collection directories
 const blogDir = path.join(contentRootDir, 'blog');
@@ -41,11 +43,42 @@ const authorsApiDir = path.join(apiRootDir, 'authors');
 
 // Ensure all directories exist
 [blogDir, categoriesDir, tagsDir, authorsDir, 
- blogApiDir, categoriesApiDir, tagsApiDir, authorsApiDir].forEach(dir => {
+ blogApiDir, categoriesApiDir, tagsApiDir, authorsApiDir, publicImagesDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
+
+// Helper function to copy a directory recursively
+function copyDirectoryRecursive(source, target) {
+  // Create target directory if it doesn't exist
+  if (!fs.existsSync(target)) {
+    fs.mkdirSync(target, { recursive: true });
+  }
+
+  // Read all files/directories from source
+  const entries = fs.readdirSync(source, { withFileTypes: true });
+
+  // Process each entry
+  for (const entry of entries) {
+    const sourcePath = path.join(source, entry.name);
+    const targetPath = path.join(target, entry.name);
+
+    if (entry.isDirectory()) {
+      // Recursively copy directories
+      copyDirectoryRecursive(sourcePath, targetPath);
+    } else {
+      // Copy files
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
+}
+
+// Copy images directory to public directory
+console.log('Copying images to public directory...');
+if (fs.existsSync(imagesDir)) {
+  copyDirectoryRecursive(imagesDir, publicImagesDir);
+}
 
 // Helper function to load all files from a directory
 function loadMarkdownFiles(dir) {

@@ -19,6 +19,7 @@ yarn.lock
 .netlify/
 
 # Generated content files
+public/images/
 /content/blog
 /public/blog/*.json
 
