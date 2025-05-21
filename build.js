@@ -243,6 +243,28 @@ fs.writeFileSync(
   JSON.stringify({ posts }, null, 2)
 );
 
+// Create a function to generate limited post files
+function createLimitedPostsFile(limit) {
+  if (limit > 0 && limit < posts.length) {
+    const limitedPosts = posts.slice(0, limit);
+    fs.writeFileSync(
+      path.join(blogApiDir, `index-${limit}.json`),
+      JSON.stringify({ 
+        posts: limitedPosts, 
+        total: posts.length, 
+        limit: limit 
+      }, null, 2)
+    );
+    console.log(`Created limited posts file with ${limit} posts: index-${limit}.json`);
+  }
+}
+
+// Create common limited post files (1, 3, 5, 10)
+createLimitedPostsFile(1);
+createLimitedPostsFile(3);
+createLimitedPostsFile(5);
+createLimitedPostsFile(10);
+
 // Create individual files for each post
 posts.forEach(post => {
   fs.writeFileSync(
