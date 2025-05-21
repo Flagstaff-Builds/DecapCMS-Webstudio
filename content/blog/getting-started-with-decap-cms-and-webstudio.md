@@ -1,12 +1,5 @@
 ---
-title: Getting Started with Decap CMS and Webstudio
-slug: getting-started
 excerpt: Learn how to use this template to create a blog with Decap CMS and Webstudio.
-feature_image:
-  url: /images/uploads/decap-cms.svg
-  alt: Decap CMS
-  width: 200
-  height: 200
 html_content: >-
   This is a sample blog post that demonstrates how to format your content. You
   can use this as a reference when creating your own posts.
@@ -104,9 +97,18 @@ html_content: >-
 
   Enjoy building with Decap CMS and Webstudio!
 published_at: 2025-05-16T23:09:00.000Z
-category: getting-started
-tags:
-  - webstudio
 authors:
   - sample-author
+title: Getting Started with Decap CMS and Webstudio
+slug: getting-started
+feature_image:
+  url: /images/uploads/decap-cms.svg
+  alt: Decap CMS
+  width: 200
+  height: 200
+category: web-development
+tags:
+  - webstudio
+  - decap
+author: admin
 ---
