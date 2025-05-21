@@ -1,4 +1,0 @@
----
-name: Gratitude
-slug: gratitude
----
