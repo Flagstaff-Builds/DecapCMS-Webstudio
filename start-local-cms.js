@@ -19,7 +19,7 @@ if (!fs.existsSync(envPath) && fs.existsSync(envExamplePath)) {
   
   // Update with local development settings
   envContent = envContent
-    .replace(/SITE_TITLE=.*/, 'SITE_TITLE=Webstudio.tips Blog (Local)')
+    .replace(/SITE_TITLE=.*/, 'SITE_TITLE=DecapCMS Webstudio (Local)')
     .replace(/SITE_URL=.*/, 'SITE_URL=http://localhost:3000')
     + '\n# Local development settings\nLOCAL_BACKEND=true\n';
   
