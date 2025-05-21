@@ -1,6 +1,10 @@
 ---
 title: A Good Kind of Quiet
 slug: a-good-kind-of-quiet
+excerpt: >+
+  Not the kind of quiet that makes you feel lonely, but the kind that settles in
+  like an old quilt—familiar and steady.
+
 feature_image:
   url: /images/uploads/porch.jpg
   alt: rocking chair on an outdoor porch
