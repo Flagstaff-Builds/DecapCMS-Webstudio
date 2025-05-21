@@ -1,4 +1,4 @@
 ---
-name: reflections
+name: Reflections
 slug: reflections
 ---
