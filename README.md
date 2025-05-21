@@ -116,6 +116,30 @@ For more detailed instructions and guides, please refer to the following documen
 - [Webstudio Integration Guide](docs/webstudio-integration.md)
 - [Troubleshooting Guide](docs/troubleshooting.md)
 
+## Limiting Blog Posts
+
+You can limit the number of blog posts that appear in your Webstudio resource by using a numbered index file instead of the default `index.json`.
+
+The build process automatically generates the following files:
+- `index.json` - Contains all blog posts
+- `index-1.json` - Contains only the most recent post
+- `index-3.json` - Contains the 3 most recent posts
+- `index-5.json` - Contains the 5 most recent posts
+- `index-10.json` - Contains the 10 most recent posts
+
+To use a limited set of posts in your Webstudio project, simply change your resource URL to include the desired limit:
+
+```
+https://your-site-url.netlify.app/blog/index-3.json
+```
+
+Each limited file includes:
+- The specified number of most recent posts
+- The total count of all posts
+- The limit that was applied
+
+This is useful for displaying only the most recent posts on your homepage while still having access to all posts for archive pages.
+
 
 
 ## Need Help?
