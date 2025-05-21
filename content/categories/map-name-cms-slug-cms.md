@@ -1,4 +1,0 @@
----
-name: cms
-slug: cms
----
