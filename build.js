@@ -273,6 +273,45 @@ posts.forEach(post => {
   );
 });
 
+// Generate index.html with environment variables
+const SITE_TITLE = process.env.SITE_TITLE || 'Blog';
+const indexHtmlTemplate = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${SITE_TITLE}</title>
+    <!-- Include Netlify Identity Widget for handling invitation links -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  </head>
+  <body>
+    <h1>${SITE_TITLE}</h1>
+    <p>This is the blog management system for ${SITE_TITLE}. To access the admin panel, go to <a href="/admin/">Admin Area</a>.</p>
+    
+    <!-- Handle invitation tokens and redirect to the admin page -->
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", user => {
+          if (!user) {
+            // Check if we have an invite token in the URL
+            const hash = window.location.hash;
+            if (hash && hash.includes('invite_token')) {
+              // Redirect to the admin page with the same hash
+              window.location.href = "/admin/" + hash;
+            }
+            
+            window.netlifyIdentity.on("login", () => {
+              document.location.href = "/admin/";
+            });
+          }
+        });
+      }
+    </script>
+  </body>
+</html>`;
+
+fs.writeFileSync(path.join(apiRootDir, 'index.html'), indexHtmlTemplate);
+
 // Write categories, tags, and authors to JSON files
 fs.writeFileSync(
   path.join(categoriesApiDir, 'index.json'),
