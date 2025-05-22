@@ -1,41 +1,14 @@
+const { builder } = require('@netlify/functions');
 const fs = require('fs');
 const path = require('path');
-const { builder } = require('@netlify/functions');
+
+// Import the build script to get the posts directly
+const { getPosts } = require(path.join(process.cwd(), '..', '..', 'build-posts'));
 
 async function handler(event, context) {
   try {
-    // Try multiple possible locations for the posts.json file
-    const possiblePaths = [
-      path.join(process.cwd(), 'public', 'api', 'posts.json'), // Netlify production
-      path.join(process.cwd(), 'api', 'posts.json'), // Local development
-      path.join(process.cwd(), '..', 'public', 'api', 'posts.json') // Fallback
-    ];
-    
-    let postsPath = '';
-    for (const possiblePath of possiblePaths) {
-      if (fs.existsSync(possiblePath)) {
-        postsPath = possiblePath;
-        break;
-      }
-    }
-    
-    // If no valid path was found, return an error
-    if (!postsPath) {
-      console.error('Could not find posts.json in any of these locations:', possiblePaths);
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ 
-          error: 'Posts data not found',
-          searchedPaths: possiblePaths,
-          message: 'Please ensure the build process has run and generated the posts.json file.'
-        })
-      };
-    }
-    
-    console.log('Found posts.json at:', postsPath);
-    
-    // Read and parse the posts data
-    const allPosts = JSON.parse(fs.readFileSync(postsPath, 'utf8'));
+    // Get all posts using the build script
+    const allPosts = { posts: getPosts() };
     
     // Get pagination parameters from query string
     const query = event.queryStringParameters || {};
