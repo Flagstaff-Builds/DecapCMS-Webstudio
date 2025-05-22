@@ -245,8 +245,9 @@ fs.writeFileSync(
 
 // Create a function to generate limited post files
 function createLimitedPostsFile(limit) {
-  if (limit > 0 && limit < posts.length) {
-    const limitedPosts = posts.slice(0, limit);
+  if (limit > 0) {
+    // Take up to 'limit' posts, or all posts if there are fewer than the limit
+    const limitedPosts = posts.slice(0, Math.min(limit, posts.length));
     fs.writeFileSync(
       path.join(blogApiDir, `index-${limit}.json`),
       JSON.stringify({ 
@@ -255,7 +256,7 @@ function createLimitedPostsFile(limit) {
         limit: limit 
       }, null, 2)
     );
-    console.log(`Created limited posts file with ${limit} posts: index-${limit}.json`);
+    console.log(`Created limited posts file with ${limitedPosts.length}/${limit} posts: index-${limit}.json`);
   }
 }
 
