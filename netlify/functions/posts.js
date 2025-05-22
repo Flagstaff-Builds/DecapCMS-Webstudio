@@ -90,11 +90,19 @@ const handler = async (event, context) => {
   try {
     // Get pagination parameters from query string
     const queryParams = event.queryStringParameters || {};
+    
+    // Log received query parameters for debugging
+    console.log('Received query parameters:', queryParams);
+    
     const page = parseInt(queryParams.page) || 1;
     const limit = parseInt(queryParams.limit) || 10;
     
+    // Log parsed pagination parameters
+    console.log('Parsed pagination parameters:', { page, limit });
+    
     // Get all posts
     const allPosts = getPosts();
+    console.log('Total posts found:', allPosts.length);
     
     // Calculate pagination
     const totalPosts = allPosts.length;
@@ -102,16 +110,27 @@ const handler = async (event, context) => {
     const startIndex = (page - 1) * limit;
     const endIndex = Math.min(startIndex + limit, totalPosts);
     
+    // Log pagination calculation details
+    console.log('Pagination calculation:', { 
+      totalPosts,
+      totalPages,
+      startIndex,
+      endIndex,
+      postsToReturn: endIndex - startIndex
+    });
+    
     // Slice the array to get only the posts for the current page
     const paginatedPosts = allPosts.slice(startIndex, endIndex);
+    
+    // Log number of posts being returned
+    console.log(`Returning ${paginatedPosts.length} posts for page ${page} with limit ${limit}`);
     
     // Log the first post to help with debugging
     if (paginatedPosts.length > 0) {
       console.log('First post in response:', {
         title: paginatedPosts[0].title,
         slug: paginatedPosts[0].slug,
-        date: paginatedPosts[0].date,
-        excerpt: paginatedPosts[0].excerpt
+        date: paginatedPosts[0].date || paginatedPosts[0].published_at
       });
     } else {
       console.log('No posts found for this page');
