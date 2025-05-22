@@ -84,10 +84,19 @@ function getPostBySlug(slug) {
       return null;
     }
     
+    // Enhance the post object with additional fields
     const post = { 
       ...frontmatter, 
       slug,
-      content 
+      content,
+      markdown_content: content, // Include raw markdown content
+      // Enhance author information if it exists as a string
+      author: typeof frontmatter.author === 'string' ? {
+        name: frontmatter.author,
+        profile_image: frontmatter.author_image || null,
+        bio: frontmatter.author_bio || null,
+        url: frontmatter.author_url || null
+      } : frontmatter.author
     };
     
     // Process image fields
