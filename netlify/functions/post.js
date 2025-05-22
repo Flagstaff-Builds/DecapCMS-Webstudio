@@ -87,9 +87,45 @@ function getPostBySlug(slug) {
 // Create the handler
 const handler = async (event, context) => {
   try {
-    // Get the slug from query parameters
+    // Log the complete event object for debugging
+    console.log('Event path:', event.path);
+    console.log('Event httpMethod:', event.httpMethod);
+    console.log('Event headers:', JSON.stringify(event.headers));
+    
+    // Get query parameters from multiple possible sources
+    const rawQueryString = event.rawQuery || event.rawQueryString || '';
     const queryParams = event.queryStringParameters || {};
-    const slug = queryParams.slug;
+    
+    console.log('Raw query string:', rawQueryString);
+    console.log('Query parameters object:', JSON.stringify(queryParams));
+    
+    // Try to get the slug from multiple sources
+    let slug = queryParams.slug;
+    
+    // If slug is not found in queryParams, try parsing it from the raw query string
+    if (!slug && rawQueryString) {
+      try {
+        const params = new URLSearchParams(rawQueryString);
+        if (params.has('slug')) {
+          slug = params.get('slug');
+          console.log('Found slug in raw query string:', slug);
+        }
+      } catch (error) {
+        console.error('Error parsing raw query string:', error);
+      }
+    }
+    
+    // If still no slug, check if it's in the URL path
+    if (!slug && event.path) {
+      const pathParts = event.path.split('/');
+      const lastPart = pathParts[pathParts.length - 1];
+      if (lastPart && lastPart !== 'post') {
+        slug = lastPart;
+        console.log('Found slug in path:', slug);
+      }
+    }
+    
+    console.log('Final slug value:', slug);
     
     if (!slug) {
       return {
@@ -102,7 +138,12 @@ const handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           success: false,
-          error: 'Missing slug parameter'
+          error: 'Missing slug parameter',
+          debug: {
+            rawQueryString,
+            queryParams,
+            path: event.path
+          }
         })
       };
     }
