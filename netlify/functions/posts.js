@@ -137,14 +137,35 @@ function getPosts() {
 // Create the handler
 const handler = async (event, context) => {
   try {
-    console.log('Processing request:', event.path, event.queryStringParameters);
-    console.log('Query parameters:', JSON.stringify(event.queryStringParameters));
+    // Extract and log query parameters
+    const queryParams = event.queryStringParameters || {};
+    console.log('Request path:', event.path);
+    console.log('Query parameters:', JSON.stringify(queryParams));
     
-    // Get pagination parameters from query string
-    const page = parseInt(event.queryStringParameters?.page) || 1;
-    const limit = parseInt(event.queryStringParameters?.limit) || 10;
+    // Check if this is a direct request or from Netlify's proxy
+    const isDirectRequest = event.path.includes('/api/posts');
     
-    console.log(`Pagination: page=${page}, limit=${limit}`);
+    // Get pagination parameters from query string with fallbacks
+    let page = 1;
+    let limit = 10;
+    
+    // Parse limit parameter, ensuring it's a valid number
+    if (queryParams.limit) {
+      const parsedLimit = parseInt(queryParams.limit, 10);
+      if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        limit = parsedLimit;
+      }
+    }
+    
+    // Parse page parameter, ensuring it's a valid number
+    if (queryParams.page) {
+      const parsedPage = parseInt(queryParams.page, 10);
+      if (!isNaN(parsedPage) && parsedPage > 0) {
+        page = parsedPage;
+      }
+    }
+    
+    console.log(`Pagination parameters: page=${page}, limit=${limit}`);
     
     // Get all posts
     const allPosts = getPosts();
