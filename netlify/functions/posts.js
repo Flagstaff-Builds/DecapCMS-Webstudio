@@ -138,20 +138,29 @@ function getPosts() {
 const handler = async (event, context) => {
   try {
     console.log('Processing request:', event.path, event.queryStringParameters);
+    console.log('Query parameters:', JSON.stringify(event.queryStringParameters));
     
     // Get pagination parameters from query string
     const page = parseInt(event.queryStringParameters?.page) || 1;
     const limit = parseInt(event.queryStringParameters?.limit) || 10;
     
+    console.log(`Pagination: page=${page}, limit=${limit}`);
+    
     // Get all posts
     const allPosts = getPosts();
+    console.log(`Total posts found: ${allPosts.length}`);
     
     // Calculate pagination
     const totalPosts = allPosts.length;
     const totalPages = Math.ceil(totalPosts / limit);
     const startIndex = (page - 1) * limit;
     const endIndex = Math.min(startIndex + limit, totalPosts);
+    
+    console.log(`Pagination indices: startIndex=${startIndex}, endIndex=${endIndex}`);
+    
+    // Slice the array to get only the posts for the current page
     const paginatedPosts = allPosts.slice(startIndex, endIndex);
+    console.log(`Returning ${paginatedPosts.length} posts for this page`);
     
     // Log the first post to help with debugging
     if (paginatedPosts.length > 0) {
