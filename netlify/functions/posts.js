@@ -6,10 +6,72 @@ const matter = require('gray-matter');
 // Content directory is at /var/task/content in the Netlify function
 const CONTENT_DIR = '/var/task/content';
 
+// Site URL for generating absolute paths
+const SITE_URL = process.env.URL || 'https://decapcms-webstudio.netlify.app';
+
 // Log the current working directory and available files
 console.log('Current working directory:', process.cwd());
 console.log('__dirname:', __dirname);
 console.log('Content directory:', CONTENT_DIR);
+console.log('Site URL:', SITE_URL);
+
+function processImagePath(imgPath) {
+  if (!imgPath) return imgPath;
+  
+  // If it's already a full URL, return as is
+  if (/^https?:\/\//.test(imgPath)) {
+    return imgPath;
+  }
+  
+  // Remove any leading slashes
+  const cleanPath = imgPath.replace(/^\/+/, '');
+  
+  // If it's already in the images directory, use as is, otherwise prepend images/
+  const finalPath = cleanPath.startsWith('images/') ? cleanPath : `images/${cleanPath}`;
+  
+  return `${SITE_URL}/${finalPath}`;
+}
+
+function processContentImages(content) {
+  if (!content) return content;
+  
+  // Process markdown images
+  return content.replace(/!\[([^\]]*)]\(([^)]+)\)/g, (match, alt, imgPath) => {
+    // Only process relative paths and paths that don't start with http
+    if (!/^(https?:\/\/|\/)/.test(imgPath)) {
+      const fullPath = processImagePath(imgPath);
+      return `![${alt}](${fullPath})`;
+    }
+    return match;
+  });
+}
+
+function processPostData(data, content) {
+  const processedData = { ...data };
+  
+  // Process image fields
+  const imageFields = ['image', 'cover', 'thumbnail', 'featured_image', 'feature_image'];
+  
+  imageFields.forEach(field => {
+    if (processedData[field]) {
+      if (typeof processedData[field] === 'string') {
+        // For string fields, add a _url version with the full path
+        processedData[`${field}_url`] = processImagePath(processedData[field]);
+      } else if (processedData[field] && typeof processedData[field] === 'object' && processedData[field].url) {
+        // For object fields (like feature_image), update the url property
+        processedData[field] = {
+          ...processedData[field],
+          url: processImagePath(processedData[field].url)
+        };
+      }
+    }
+  });
+  
+  return {
+    ...processedData,
+    content: processContentImages(content)
+  };
+}
 
 // Function to get all posts
 function getPosts() {
@@ -45,68 +107,19 @@ function getPosts() {
           continue;
         }
         
+        // Process the post data (including image URLs)
+        const processedPost = processPostData(frontmatter, content);
+        
+        // Add slug and excerpt
         const slug = filename.replace(/\.(md|mdx)$/, '');
-        
-        // Get the site URL from environment or use a fallback
-        const siteUrl = process.env.URL || 'https://decapcms-webstudio.netlify.app';
-        
-        // Create a new frontmatter object with processed image URLs
-        const processedFrontmatter = { ...frontmatter };
-        
-        // Process image fields (common field names that might contain image paths)
-        const imageFields = ['image', 'cover', 'thumbnail', 'featured_image'];
-        
-        // Helper function to process image paths
-        const processImagePath = (imgPath) => {
-          if (!imgPath) return imgPath;
-          
-          // If it's already a full URL, return as is
-          if (/^https?:\/\//.test(imgPath)) {
-            return imgPath;
-          }
-          
-          // Remove any leading slashes and ensure it starts with /uploads/
-          const cleanPath = imgPath.replace(/^\/+/, '');
-          const finalPath = cleanPath.startsWith('uploads/') ? cleanPath : `uploads/${cleanPath}`;
-          
-          return `${siteUrl}/${finalPath}`;
-        };
-        
-        // Process all image fields in frontmatter
-        imageFields.forEach(field => {
-          if (processedFrontmatter[field]) {
-            processedFrontmatter[`${field}_url`] = processImagePath(processedFrontmatter[field]);
-          }
-        });
-        
-        // Process content to update image paths
-        let processedContent = content;
-        const imageRegex = /!\[([^\]]*)]\(([^)]+)\)/g;
-        let match;
-        const imageReplacements = [];
-        
-        // Find all image markdown in content
-        while ((match = imageRegex.exec(content)) !== null) {
-          const [fullMatch, alt, imgPath] = match;
-          // Only process relative paths and paths that don't start with /images
-          if (!/^(https?:\/\/|\/images\/)/.test(imgPath)) {
-            const fullPath = processImagePath(imgPath);
-            imageReplacements.push({ from: fullMatch, to: `![${alt}](${fullPath})` });
-          }
-        }
-        
-        // Replace all image paths in content
-        imageReplacements.forEach(({ from, to }) => {
-          processedContent = processedContent.replace(from, to);
-        });
+        const excerpt = processedPost.excerpt || 
+          (processedPost.content ? 
+            processedPost.content.slice(0, 200).replace(/\s+\S*$/, '') + '...' : '');
         
         posts.push({
-          title: processedFrontmatter.title || 'Untitled',
-          date: processedFrontmatter.date || new Date().toISOString(),
+          ...processedPost,
           slug,
-          excerpt: processedFrontmatter.excerpt || processedContent.slice(0, 200).replace(/\s+\S*$/, '') + '...',
-          content: processedContent,
-          ...processedFrontmatter
+          excerpt
         });
       } catch (error) {
         console.error(`Error processing ${filename}:`, error);
@@ -114,7 +127,7 @@ function getPosts() {
     }
     
     // Sort posts by date, newest first
-    return posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return posts.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
   } catch (error) {
     console.error('Error getting posts:', error);
     return [];
