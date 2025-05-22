@@ -44,6 +44,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/post"
+  to = "/.netlify/functions/post"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/debug"
   to = "/.netlify/functions/debug"
   status = 200

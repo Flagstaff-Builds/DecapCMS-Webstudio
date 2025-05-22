@@ -88,11 +88,6 @@ function getPosts() {
 // Create the handler
 const handler = async (event, context) => {
   try {
-    // CRITICAL: Directly access and parse the URL query string to ensure we get the parameters
-    // This is a more direct approach that bypasses potential Netlify quirks with queryStringParameters
-    let page = 1;
-    let limit = 10;
-    
     // Log the complete event object for debugging
     console.log('Event path:', event.path);
     console.log('Event httpMethod:', event.httpMethod);
@@ -104,6 +99,51 @@ const handler = async (event, context) => {
     
     console.log('Raw query string:', rawQueryString);
     console.log('Query parameters object:', JSON.stringify(queryParams));
+    
+    // Check if a slug is provided - if so, return a single post
+    if (queryParams.slug || (rawQueryString && new URLSearchParams(rawQueryString).has('slug'))) {
+      const slug = queryParams.slug || new URLSearchParams(rawQueryString).get('slug');
+      console.log('Looking for post with slug:', slug);
+      
+      // Get all posts
+      const allPosts = getPosts();
+      
+      // Find the post with the matching slug
+      const post = allPosts.find(post => post.slug === slug);
+      
+      if (!post) {
+        console.log('No post found with slug:', slug);
+        return {
+          statusCode: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS'
+          },
+          body: JSON.stringify({ 
+            success: false,
+            error: 'Post not found'
+          })
+        };
+      }
+      
+      console.log('Found post with slug:', slug);
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS'
+        },
+        body: JSON.stringify(post)
+      };
+    }
+    
+    // If no slug is provided, handle as a paginated list request
+    let page = 1;
+    let limit = 10;
     
     // Parse limit from query parameters object
     if (queryParams && queryParams.limit) {
