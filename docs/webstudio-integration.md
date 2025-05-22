@@ -73,13 +73,63 @@ For individual blog posts, you'll need to:
    - `blogPost.data.tags` for the tags (this is an array so you'll need to use a collection to display them)
    - `blogPost.data.author` for the post author (with properties like `name`, `image_url`, etc.)
 
-## Example Resource URLs
+## API Endpoints
 
-- Blog index: `https://YOUR-NETLIFY-SITE.netlify.app/blog/index.json`
-- Single post: `https://YOUR-NETLIFY-SITE.netlify.app/blog/getting-started.json`
-- Categories index: `https://YOUR-NETLIFY-SITE.netlify.app/categories/index.json`
-- Tags index: `https://YOUR-NETLIFY-SITE.netlify.app/tags/index.json`
-- Authors index: `https://YOUR-NETLIFY-SITE.netlify.app/authors/index.json`
+### Get Paginated Posts
+
+```
+GET /api/posts?page=1&limit=10
+```
+
+**Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Number of posts per page (default: 10)
+
+**Example Response:**
+```json
+{
+  "posts": [
+    {
+      "title": "Post Title",
+      "slug": "post-slug",
+      "excerpt": "Post excerpt...",
+      "feature_image": {
+        "url": "/images/example.jpg",
+        "alt": "Alt text",
+        "title": "Image title"
+      }
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "postsPerPage": 10,
+    "totalPosts": 25,
+    "totalPages": 3,
+    "hasNextPage": true,
+    "hasPrevPage": false
+  }
+}
+```
+
+### Get Single Post
+```
+GET /blog/post-slug.json
+```
+
+### Categories
+```
+GET /categories/index.json
+```
+
+### Tags
+```
+GET /tags/index.json
+```
+
+### Authors
+```
+GET /authors/index.json
+```
 
 ## Limiting Blog Posts
 

@@ -20,6 +20,7 @@ yarn.lock
 
 # Generated content files
 public/images/
+/public/api/
 /public/blog/*.json
 /public/authors/*.json
 /public/categories/*.json
