@@ -126,6 +126,7 @@ const handler = async (event, context) => {
       };
     }
     
+    // Format the response to match what Webstudio expects
     return {
       statusCode: 200,
       headers: {
@@ -134,10 +135,7 @@ const handler = async (event, context) => {
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, OPTIONS'
       },
-      body: JSON.stringify({ 
-        success: true,
-        post
-      })
+      body: JSON.stringify(post) // Return just the post object directly
     };
   } catch (error) {
     console.error('Handler error:', error);
