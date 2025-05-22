@@ -7,6 +7,8 @@ This guide explains how to connect your Decap CMS blog to a Webstudio site.
 ## Table of Contents
 - [Create a Listing Page](#create-a-listing-page)
 - [Create a Dynamic Post Page](#create-a-dynamic-post-page)
+- [Implement Pagination](#implement-pagination)
+- [Display Limited Posts](#display-limited-posts)
 
 ### Create a Listing Page
 
@@ -49,6 +51,67 @@ This guide explains how to connect your Decap CMS blog to a Webstudio site.
 
 
 ### Create a Dynamic Post Page
+
+1. In Webstudio, create a new page with a dynamic route parameter (e.g., `/blog/[slug]`)
+2. Add a Data Variable to fetch a single blog post:
+   - Name it `blogPost`
+   - Set the URL to `/api/post?slug=${system.params.slug}`
+   - This will fetch a single post based on the slug in the URL
+
+3. Display the post content:
+   - Add a Heading for the title: `${blogPost.title}`
+   - Add an Image for the feature image: `${blogPost.feature_image.url}`
+   - For the post content, use: `${blogPost.html_content}`
+   - For the author section:
+     - Author name: `${blogPost.author.name}`
+     - Author image: `${blogPost.author.profile_image}`
+     - Author bio: `${blogPost.author.bio}`
+   - For the published date: `${blogPost.published_at}`
+
+> **Note**: If you're using the `/api/posts` endpoint with a slug parameter instead, the URL would be `/api/posts?slug=${system.params.slug}`
+
+### Implement Pagination
+
+To implement pagination for your blog listing page:
+
+1. Set up the Data Variable for your blog posts with pagination parameters:
+   - Name it `blogPosts`
+   - Set the URL to `/api/posts?limit=${postsPerPage}${system.search.page ? `&page=${system.search.page}` : ''}`
+   - Create a separate variable `postsPerPage` with a numeric value (e.g., `10`)
+
+2. Add Pagination Controls:
+   - Create a navigation element with "Previous" and "Next" buttons
+   - For the Previous button:
+     - Set its visibility condition to: `blogPosts.data.pagination.hasPrevPage ? true : false`
+     - Set its href to: `?page=${blogPosts.data.pagination.currentPage - 1}`
+   - For the Next button:
+     - Set its visibility condition to: `blogPosts.data.pagination.hasNextPage ? true : false`
+     - Set its href to: `?page=${blogPosts.data.pagination.currentPage + 1}`
+
+3. Display Pagination Information (optional):
+   - Add text to show current page: `Page ${blogPosts.data.pagination.currentPage} of ${blogPosts.data.pagination.totalPages}`
+   - Show total posts: `${blogPosts.data.pagination.totalPosts} posts`
+
+4. Show/Hide Pagination Controls:
+   - Set the visibility of the entire pagination component to:
+     ```javascript
+     ((blogPosts.data.pagination.hasNextPage) || (blogPosts.data.pagination.currentPage > 1)) ? true : false
+     ```
+
+### Display Limited Posts
+
+To display a limited number of posts (e.g., on your homepage):
+
+1. Create a Data Variable for a limited set of posts:
+   - Name it `recentPosts`
+   - Set the URL to `/api/posts?limit=3` (replace 3 with your desired number)
+
+2. Display the limited posts:
+   - Add a Collection component
+   - Bind its Data to `recentPosts.data.posts`
+   - Design your post cards as needed
+
+3. Add a "View All Posts" link to your full blog page
 
 For individual blog posts, you'll need to:
 
