@@ -6,7 +6,8 @@
 [build.environment]
   NODE_VERSION = "16"
 
-[functions]
+[[functions]]
+  directory = "netlify/functions"
   node_bundler = "esbuild"
   external_node_modules = ["gray-matter", "@netlify/functions"]
   included_files = ["content/**"]
