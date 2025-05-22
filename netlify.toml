@@ -1,6 +1,7 @@
 [build]
   publish = "public"
   command = "npm run build"
+  functions = "netlify/functions"
 
 # Netlify Identity is handled automatically by Netlify
 
@@ -26,6 +27,13 @@
 
 # Note: Git Gateway is handled automatically by Netlify
 
+# API endpoint
+[[redirects]]
+  from = "/api/posts"
+  to = "/.netlify/functions/posts"
+  status = 200
+  force = true
+
 # Serve blog pages
 [[redirects]]
   from = "/blog/*"
@@ -44,7 +52,7 @@
   NODE_VERSION = "16"
 
 [functions]
-  directory = "functions"
+  directory = "netlify/functions"
 
 # Enable Netlify Identity but only allow invite-based signups
 [identity]
