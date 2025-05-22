@@ -4,16 +4,35 @@ const { builder } = require('@netlify/functions');
 
 async function handler(event, context) {
   try {
-    // Read the posts data file
-    const postsPath = path.join(process.cwd(), 'public', 'api', 'posts.json');
+    // Try multiple possible locations for the posts.json file
+    const possiblePaths = [
+      path.join(process.cwd(), 'public', 'api', 'posts.json'), // Netlify production
+      path.join(process.cwd(), 'api', 'posts.json'), // Local development
+      path.join(process.cwd(), '..', 'public', 'api', 'posts.json') // Fallback
+    ];
     
-    // Check if the file exists
-    if (!fs.existsSync(postsPath)) {
+    let postsPath = '';
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(possiblePath)) {
+        postsPath = possiblePath;
+        break;
+      }
+    }
+    
+    // If no valid path was found, return an error
+    if (!postsPath) {
+      console.error('Could not find posts.json in any of these locations:', possiblePaths);
       return {
         statusCode: 404,
-        body: JSON.stringify({ error: 'Posts data not found. Please run the build process first.' })
+        body: JSON.stringify({ 
+          error: 'Posts data not found',
+          searchedPaths: possiblePaths,
+          message: 'Please ensure the build process has run and generated the posts.json file.'
+        })
       };
     }
+    
+    console.log('Found posts.json at:', postsPath);
     
     // Read and parse the posts data
     const allPosts = JSON.parse(fs.readFileSync(postsPath, 'utf8'));
