@@ -56,14 +56,26 @@ function getPosts() {
         // Process image fields (common field names that might contain image paths)
         const imageFields = ['image', 'cover', 'thumbnail', 'featured_image'];
         
+        // Helper function to process image paths
+        const processImagePath = (imgPath) => {
+          if (!imgPath) return imgPath;
+          
+          // If it's already a full URL, return as is
+          if (/^https?:\/\//.test(imgPath)) {
+            return imgPath;
+          }
+          
+          // Remove any leading slashes and ensure it starts with /uploads/
+          const cleanPath = imgPath.replace(/^\/+/, '');
+          const finalPath = cleanPath.startsWith('uploads/') ? cleanPath : `uploads/${cleanPath}`;
+          
+          return `${siteUrl}/${finalPath}`;
+        };
+        
+        // Process all image fields in frontmatter
         imageFields.forEach(field => {
           if (processedFrontmatter[field]) {
-            // If the path doesn't start with http or /, prepend the site URL
-            if (!/^(https?:\/\/|\/)/.test(processedFrontmatter[field])) {
-              processedFrontmatter[`${field}_url`] = `${siteUrl}${processedFrontmatter[field].startsWith('/') ? '' : '/'}${processedFrontmatter[field]}`;
-            } else {
-              processedFrontmatter[`${field}_url`] = processedFrontmatter[field];
-            }
+            processedFrontmatter[`${field}_url`] = processImagePath(processedFrontmatter[field]);
           }
         });
         
@@ -76,8 +88,9 @@ function getPosts() {
         // Find all image markdown in content
         while ((match = imageRegex.exec(content)) !== null) {
           const [fullMatch, alt, imgPath] = match;
-          if (!/^(https?:\/\/|\/)/.test(imgPath)) {
-            const fullPath = `${siteUrl}${imgPath.startsWith('/') ? '' : '/'}${imgPath}`;
+          // Only process relative paths and paths that don't start with /images
+          if (!/^(https?:\/\/|\/images\/)/.test(imgPath)) {
+            const fullPath = processImagePath(imgPath);
             imageReplacements.push({ from: fullMatch, to: `![${alt}](${fullPath})` });
           }
         }
