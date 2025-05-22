@@ -3,9 +3,20 @@
   command = "npm install && npm run build"
   functions = "netlify/functions"
 
-# Netlify Identity is handled automatically by Netlify
+[build.environment]
+  NODE_VERSION = "16"
 
-# Redirect for identity tokens to admin page
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["gray-matter", "@netlify/functions"]
+  included_files = ["content/**"]
+
+# Netlify Identity is handled automatically by Netlify
+[identity]
+  enable = true
+  invite_only = true
+
+# Redirects
 [[redirects]]
   from = "/#invite_token=*"
   to = "/admin/#invite_token=:splat"
@@ -25,12 +36,16 @@
   to = "/admin/index.html"
   status = 200
 
-# Note: Git Gateway is handled automatically by Netlify
-
-# API endpoint
+# API endpoints
 [[redirects]]
   from = "/api/posts"
   to = "/.netlify/functions/posts"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/debug"
+  to = "/.netlify/functions/debug"
   status = 200
   force = true
 
@@ -40,28 +55,8 @@
   to = "/blog/:splat"
   status = 200
 
-# Images are copied to public/images during build
-
 # SPA fallback - must be last
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-[build.environment]
-  NODE_VERSION = "16"
-
-[functions]
-  directory = "netlify/functions"
-  included_files = ["content/**", "package.json", "netlify/functions/**"]
-  node_bundler = "esbuild"
-  external_node_modules = ["gray-matter", "@netlify/functions"]
-  
-# Include the content directory in the function package
-[functions.'*']
-  included_files = ["content/**"]
-
-# Enable Netlify Identity but only allow invite-based signups
-[identity]
-  enable = true
-  invite_only = true
