@@ -47,13 +47,53 @@ function getPosts() {
         
         const slug = filename.replace(/\.(md|mdx)$/, '');
         
+        // Get the site URL from environment or use a fallback
+        const siteUrl = process.env.URL || 'https://decapcms-webstudio.netlify.app';
+        
+        // Create a new frontmatter object with processed image URLs
+        const processedFrontmatter = { ...frontmatter };
+        
+        // Process image fields (common field names that might contain image paths)
+        const imageFields = ['image', 'cover', 'thumbnail', 'featured_image'];
+        
+        imageFields.forEach(field => {
+          if (processedFrontmatter[field]) {
+            // If the path doesn't start with http or /, prepend the site URL
+            if (!/^(https?:\/\/|\/)/.test(processedFrontmatter[field])) {
+              processedFrontmatter[`${field}_url`] = `${siteUrl}${processedFrontmatter[field].startsWith('/') ? '' : '/'}${processedFrontmatter[field]}`;
+            } else {
+              processedFrontmatter[`${field}_url`] = processedFrontmatter[field];
+            }
+          }
+        });
+        
+        // Process content to update image paths
+        let processedContent = content;
+        const imageRegex = /!\[([^\]]*)]\(([^)]+)\)/g;
+        let match;
+        const imageReplacements = [];
+        
+        // Find all image markdown in content
+        while ((match = imageRegex.exec(content)) !== null) {
+          const [fullMatch, alt, imgPath] = match;
+          if (!/^(https?:\/\/|\/)/.test(imgPath)) {
+            const fullPath = `${siteUrl}${imgPath.startsWith('/') ? '' : '/'}${imgPath}`;
+            imageReplacements.push({ from: fullMatch, to: `![${alt}](${fullPath})` });
+          }
+        }
+        
+        // Replace all image paths in content
+        imageReplacements.forEach(({ from, to }) => {
+          processedContent = processedContent.replace(from, to);
+        });
+        
         posts.push({
-          title: frontmatter.title || 'Untitled',
-          date: frontmatter.date || new Date().toISOString(),
+          title: processedFrontmatter.title || 'Untitled',
+          date: processedFrontmatter.date || new Date().toISOString(),
           slug,
-          excerpt: frontmatter.excerpt || content.slice(0, 200).replace(/\s+\S*$/, '') + '...',
-          content,
-          ...frontmatter
+          excerpt: processedFrontmatter.excerpt || processedContent.slice(0, 200).replace(/\s+\S*$/, '') + '...',
+          content: processedContent,
+          ...processedFrontmatter
         });
       } catch (error) {
         console.error(`Error processing ${filename}:`, error);
