@@ -120,6 +120,55 @@ app.use('/api/v1', (req, res, next) => {
   }
 });
 
+// API endpoint for paginated posts
+app.get('/api/posts', (req, res) => {
+  try {
+    // Read the posts data file
+    const postsPath = path.join(__dirname, 'public', 'api', 'posts.json');
+    
+    // Check if the file exists
+    if (!fs.existsSync(postsPath)) {
+      return res.status(404).json({ error: 'Posts data not found. Please run the build process first.' });
+    }
+    
+    // Read and parse the posts data
+    const allPosts = JSON.parse(fs.readFileSync(postsPath, 'utf8'));
+    
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 posts per page
+    
+    // Calculate pagination values
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    
+    // Get the paginated posts
+    const posts = allPosts.posts || [];
+    const paginatedPosts = posts.slice(startIndex, endIndex);
+    
+    // Create response object with pagination metadata
+    const totalPosts = posts.length;
+    const totalPages = Math.ceil(totalPosts / limit);
+    
+    const response = {
+      posts: paginatedPosts,
+      pagination: {
+        currentPage: page,
+        postsPerPage: limit,
+        totalPosts,
+        totalPages,
+        hasNextPage: endIndex < totalPosts,
+        hasPrevPage: startIndex > 0
+      }
+    };
+    
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

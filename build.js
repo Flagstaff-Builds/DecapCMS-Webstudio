@@ -260,11 +260,56 @@ function createLimitedPostsFile(limit) {
   }
 }
 
+// Create a function to generate paginated post files
+function createPaginatedPostsFile(pageSize, pageNumber) {
+  if (pageSize > 0 && pageNumber > 0) {
+    const startIndex = (pageNumber - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, posts.length);
+    
+    // Only create the page if it has content or it's the first page
+    if (startIndex < posts.length || pageNumber === 1) {
+      const paginatedPosts = posts.slice(startIndex, endIndex);
+      const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
+      
+      fs.writeFileSync(
+        path.join(blogApiDir, `page-${pageNumber}.json`),
+        JSON.stringify({ 
+          posts: paginatedPosts, 
+          total: posts.length,
+          page: pageNumber,
+          pageSize: pageSize,
+          totalPages: totalPages,
+          hasNextPage: pageNumber < totalPages,
+          hasPrevPage: pageNumber > 1
+        }, null, 2)
+      );
+      console.log(`Created paginated posts file: page-${pageNumber}.json with ${paginatedPosts.length} posts`);
+    }
+  }
+}
+
 // Create common limited post files (1, 3, 5, 10)
 createLimitedPostsFile(1);
 createLimitedPostsFile(3);
 createLimitedPostsFile(5);
 createLimitedPostsFile(10);
+
+// Create paginated files (3 posts per page)
+const postsPerPage = 3;
+const totalPages = Math.ceil(posts.length / postsPerPage) || 1; // At least 1 page
+
+// Create paginated files for all pages
+for (let i = 1; i <= totalPages; i++) {
+  createPaginatedPostsFile(postsPerPage, i);
+}
+
+// Also create a default page-1.json for convenience
+if (fs.existsSync(path.join(blogApiDir, 'page-1.json'))) {
+  fs.copyFileSync(
+    path.join(blogApiDir, 'page-1.json'),
+    path.join(blogApiDir, 'index-paginated.json')
+  );
+}
 
 // Create individual files for each post
 posts.forEach(post => {
@@ -273,6 +318,18 @@ posts.forEach(post => {
     JSON.stringify(post, null, 2)
   );
 });
+
+// Create a single posts.json file for the API
+const apiDir = path.join(apiRootDir, 'api');
+if (!fs.existsSync(apiDir)) {
+  fs.mkdirSync(apiDir, { recursive: true });
+}
+
+fs.writeFileSync(
+  path.join(apiDir, 'posts.json'),
+  JSON.stringify({ posts }, null, 2)
+);
+console.log(`Created API file with ${posts.length} posts`);
 
 // Generate index.html with environment variables
 const SITE_TITLE = process.env.SITE_TITLE || 'Blog';
