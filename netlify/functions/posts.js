@@ -3,59 +3,18 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 
+// Content directory is at /var/task/content in the Netlify function
+const CONTENT_DIR = '/var/task/content';
+
 // Log the current working directory and available files
 console.log('Current working directory:', process.cwd());
 console.log('__dirname:', __dirname);
-
-try {
-  const files = fs.readdirSync(process.cwd());
-  console.log('Files in current directory:', files);
-  
-  // Try to find the content directory
-  const possibleContentDirs = [
-    path.join(process.cwd(), 'content'),
-    path.join(__dirname, '..', '..', 'content'),
-    path.join(process.cwd(), '..', 'content'),
-    '/opt/build/repo/content'  // Netlify's build directory
-  ];
-  
-  for (const dir of possibleContentDirs) {
-    console.log(`Checking for content directory at: ${dir}`);
-    if (fs.existsSync(dir)) {
-      console.log(`Found content directory at: ${dir}`);
-      console.log('Content directory files:', fs.readdirSync(dir));
-      break;
-    }
-  }
-} catch (error) {
-  console.error('Error listing directories:', error);
-}
+console.log('Content directory:', CONTENT_DIR);
 
 // Function to get all posts
 function getPosts() {
   try {
-    // Try multiple possible locations for the content directory
-    const possiblePostsDirs = [
-      path.join(process.cwd(), 'content', 'blog'),
-      path.join(__dirname, '..', '..', 'content', 'blog'),
-      path.join(process.cwd(), '..', 'content', 'blog'),
-      '/opt/build/repo/content/blog'  // Netlify's build directory
-    ];
-    
-    let postsDir = '';
-    for (const dir of possiblePostsDirs) {
-      if (fs.existsSync(dir)) {
-        postsDir = dir;
-        break;
-      }
-    }
-    
-    if (!postsDir) {
-      console.error('Could not find blog directory in any of these locations:', possiblePostsDirs);
-      return [];
-    }
-    
-    console.log('Using posts directory:', postsDir);
+    const postsDir = path.join(CONTENT_DIR, 'blog');
     console.log('Looking for posts in:', postsDir);
     
     if (!fs.existsSync(postsDir)) {
@@ -63,72 +22,82 @@ function getPosts() {
       return [];
     }
     
-    const fileNames = fs.readdirSync(postsDir);
-    console.log('Found markdown files:', fileNames);
+    const postFiles = fs.readdirSync(postsDir);
+    console.log('Found post files:', postFiles);
     
-    const posts = fileNames.map(fileName => {
+    const posts = [];
+    
+    for (const filename of postFiles) {
       try {
-        if (!fileName.endsWith('.md')) return null;
+        if (!filename.endsWith('.md') && !filename.endsWith('.mdx')) {
+          continue;
+        }
         
-        const slug = fileName.replace(/\.md$/, '');
-        const fullPath = path.join(postsDir, fileName);
-        console.log('Processing file:', fullPath);
+        const filePath = path.join(postsDir, filename);
+        console.log(`Processing post: ${filePath}`);
         
-        const fileContents = fs.readFileSync(fullPath, 'utf8');
-        const { data, content } = matter(fileContents);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const { data: frontmatter, content } = matter(fileContent);
         
-        return {
-          ...data,
+        // Skip drafts unless we're in development
+        if (frontmatter.draft && process.env.CONTEXT !== 'development') {
+          console.log(`Skipping draft: ${filename}`);
+          continue;
+        }
+        
+        const slug = filename.replace(/\.(md|mdx)$/, '');
+        
+        posts.push({
+          title: frontmatter.title || 'Untitled',
+          date: frontmatter.date || new Date().toISOString(),
           slug,
-          content
-        };
+          excerpt: frontmatter.excerpt || content.slice(0, 200).replace(/\s+\S*$/, '') + '...',
+          content,
+          ...frontmatter
+        });
       } catch (error) {
-        console.error(`Error processing file ${fileName}:`, error);
-        return null;
+        console.error(`Error processing ${filename}:`, error);
       }
-    }).filter(Boolean); // Remove any null entries from failed processing
-
-    // Sort posts by date (newest first)
+    }
+    
+    // Sort posts by date, newest first
     return posts.sort((a, b) => new Date(b.date) - new Date(a.date));
   } catch (error) {
-    console.error('Error in getPosts:', error);
+    console.error('Error getting posts:', error);
     return [];
   }
 }
 
-async function handler(event, context) {
+// Create the handler
+const handler = async (event, context) => {
   try {
-    // Get all posts
-    const allPosts = { posts: getPosts() };
+    console.log('Processing request:', event.path, event.queryStringParameters);
     
     // Get pagination parameters from query string
-    const query = event.queryStringParameters || {};
-    const page = parseInt(query.page) || 1;
-    const limit = parseInt(query.limit) || 10;
+    const page = parseInt(event.queryStringParameters?.page) || 1;
+    const limit = parseInt(event.queryStringParameters?.limit) || 10;
     
-    // Calculate pagination values
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
+    // Get all posts
+    const allPosts = getPosts();
     
-    // Get the paginated posts
-    const posts = allPosts.posts || [];
-    const paginatedPosts = posts.slice(startIndex, endIndex);
-    
-    // Create response object with pagination metadata
-    const totalPosts = posts.length;
+    // Calculate pagination
+    const totalPosts = allPosts.length;
     const totalPages = Math.ceil(totalPosts / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = Math.min(startIndex + limit, totalPosts);
+    const paginatedPosts = allPosts.slice(startIndex, endIndex);
     
-    const response = {
-      posts: paginatedPosts,
-      pagination: {
-        currentPage: page,
-        postsPerPage: limit,
-        totalPosts,
-        totalPages,
-        hasNextPage: endIndex < totalPosts,
-        hasPrevPage: startIndex > 0
-      }
-    };
+    // Log the first post to help with debugging
+    if (paginatedPosts.length > 0) {
+      console.log('First post in response:', {
+        title: paginatedPosts[0].title,
+        slug: paginatedPosts[0].slug,
+        date: paginatedPosts[0].date,
+        excerpt: paginatedPosts[0].excerpt
+      });
+    } else {
+      console.log('No posts found for this page');
+    }
     
     return {
       statusCode: 200,
@@ -138,16 +107,39 @@ async function handler(event, context) {
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, OPTIONS'
       },
-      body: JSON.stringify(response)
+      body: JSON.stringify({ 
+        success: true,
+        count: paginatedPosts.length,
+        posts: paginatedPosts,
+        pagination: {
+          currentPage: page,
+          postsPerPage: limit,
+          totalPosts,
+          totalPages,
+          hasNextPage: endIndex < totalPosts,
+          hasPrevPage: startIndex > 0
+        }
+      })
     };
   } catch (error) {
-    console.error('Error fetching posts:', error);
+    console.error('Handler error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to fetch posts' })
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS'
+      },
+      body: JSON.stringify({ 
+        success: false,
+        error: 'Failed to fetch posts',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      })
     };
   }
-}
+};
 
 // Export the builder-wrapped handler
-exports.handler = builder(handler);
+module.exports = { handler: builder(handler) };
