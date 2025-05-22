@@ -62,7 +62,15 @@ function getPosts() {
         const post = { 
           ...frontmatter, 
           slug: fileSlug,
-          frontmatter_slug: frontmatter.slug // Store the frontmatter slug separately
+          frontmatter_slug: frontmatter.slug, // Store the frontmatter slug separately
+          markdown_content: content, // Include raw markdown content
+          // Enhance author information if it exists as a string
+          author: typeof frontmatter.author === 'string' ? {
+            name: frontmatter.author,
+            profile_image: frontmatter.author_image || null,
+            bio: frontmatter.author_bio || null,
+            url: frontmatter.author_url || null
+          } : frontmatter.author
         };
         
         // Process image fields
