@@ -5,9 +5,28 @@ const matter = require('gray-matter');
 
 // Log the current working directory and available files
 console.log('Current working directory:', process.cwd());
+console.log('__dirname:', __dirname);
+
 try {
-  console.log('Files in current directory:', fs.readdirSync(process.cwd()));
-  console.log('Files in content directory:', fs.readdirSync(path.join(process.cwd(), '..', '..', 'content')));
+  const files = fs.readdirSync(process.cwd());
+  console.log('Files in current directory:', files);
+  
+  // Try to find the content directory
+  const possibleContentDirs = [
+    path.join(process.cwd(), 'content'),
+    path.join(__dirname, '..', '..', 'content'),
+    path.join(process.cwd(), '..', 'content'),
+    '/opt/build/repo/content'  // Netlify's build directory
+  ];
+  
+  for (const dir of possibleContentDirs) {
+    console.log(`Checking for content directory at: ${dir}`);
+    if (fs.existsSync(dir)) {
+      console.log(`Found content directory at: ${dir}`);
+      console.log('Content directory files:', fs.readdirSync(dir));
+      break;
+    }
+  }
 } catch (error) {
   console.error('Error listing directories:', error);
 }
@@ -15,7 +34,28 @@ try {
 // Function to get all posts
 function getPosts() {
   try {
-    const postsDir = path.join(process.cwd(), '..', '..', 'content', 'blog');
+    // Try multiple possible locations for the content directory
+    const possiblePostsDirs = [
+      path.join(process.cwd(), 'content', 'blog'),
+      path.join(__dirname, '..', '..', 'content', 'blog'),
+      path.join(process.cwd(), '..', 'content', 'blog'),
+      '/opt/build/repo/content/blog'  // Netlify's build directory
+    ];
+    
+    let postsDir = '';
+    for (const dir of possiblePostsDirs) {
+      if (fs.existsSync(dir)) {
+        postsDir = dir;
+        break;
+      }
+    }
+    
+    if (!postsDir) {
+      console.error('Could not find blog directory in any of these locations:', possiblePostsDirs);
+      return [];
+    }
+    
+    console.log('Using posts directory:', postsDir);
     console.log('Looking for posts in:', postsDir);
     
     if (!fs.existsSync(postsDir)) {
