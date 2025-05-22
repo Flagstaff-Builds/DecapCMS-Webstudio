@@ -53,6 +53,12 @@
 
 [functions]
   directory = "netlify/functions"
+  included_files = ["content/**", "package.json", "netlify/functions/**"]
+  node_bundler = "esbuild"
+  external_node_modules = ["gray-matter", "@netlify/functions"]
+  
+# Include the content directory in the function package
+[functions.'*']
   included_files = ["content/**"]
 
 # Enable Netlify Identity but only allow invite-based signups

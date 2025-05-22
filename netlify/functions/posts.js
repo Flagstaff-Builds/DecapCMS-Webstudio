@@ -1,13 +1,64 @@
 const { builder } = require('@netlify/functions');
 const fs = require('fs');
 const path = require('path');
+const matter = require('gray-matter');
 
-// Import the build script to get the posts directly
-const { getPosts } = require(path.join(process.cwd(), '..', '..', 'build-posts'));
+// Log the current working directory and available files
+console.log('Current working directory:', process.cwd());
+try {
+  console.log('Files in current directory:', fs.readdirSync(process.cwd()));
+  console.log('Files in content directory:', fs.readdirSync(path.join(process.cwd(), '..', '..', 'content')));
+} catch (error) {
+  console.error('Error listing directories:', error);
+}
+
+// Function to get all posts
+function getPosts() {
+  try {
+    const postsDir = path.join(process.cwd(), '..', '..', 'content', 'blog');
+    console.log('Looking for posts in:', postsDir);
+    
+    if (!fs.existsSync(postsDir)) {
+      console.error('Posts directory does not exist:', postsDir);
+      return [];
+    }
+    
+    const fileNames = fs.readdirSync(postsDir);
+    console.log('Found markdown files:', fileNames);
+    
+    const posts = fileNames.map(fileName => {
+      try {
+        if (!fileName.endsWith('.md')) return null;
+        
+        const slug = fileName.replace(/\.md$/, '');
+        const fullPath = path.join(postsDir, fileName);
+        console.log('Processing file:', fullPath);
+        
+        const fileContents = fs.readFileSync(fullPath, 'utf8');
+        const { data, content } = matter(fileContents);
+        
+        return {
+          ...data,
+          slug,
+          content
+        };
+      } catch (error) {
+        console.error(`Error processing file ${fileName}:`, error);
+        return null;
+      }
+    }).filter(Boolean); // Remove any null entries from failed processing
+
+    // Sort posts by date (newest first)
+    return posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+  } catch (error) {
+    console.error('Error in getPosts:', error);
+    return [];
+  }
+}
 
 async function handler(event, context) {
   try {
-    // Get all posts using the build script
+    // Get all posts
     const allPosts = { posts: getPosts() };
     
     // Get pagination parameters from query string
