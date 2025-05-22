@@ -37,10 +37,11 @@ function getPostBySlug(slug) {
       return null;
     }
     
-    // Look for a file matching the slug
+    // Get all post files
     const postFiles = fs.readdirSync(postsDir);
     let targetFile = null;
     
+    // First try: Check if there's a file with a matching filename
     for (const filename of postFiles) {
       if ((filename === `${slug}.md`) || (filename === `${slug}.mdx`)) {
         targetFile = filename;
@@ -48,8 +49,29 @@ function getPostBySlug(slug) {
       }
     }
     
+    // Second try: If no file matches by name, check frontmatter slugs
     if (!targetFile) {
-      console.error(`No post found with slug: ${slug}`);
+      console.log(`No file with name ${slug}.md found, checking frontmatter slugs...`);
+      
+      for (const filename of postFiles) {
+        if (!filename.endsWith('.md') && !filename.endsWith('.mdx')) {
+          continue;
+        }
+        
+        const filePath = path.join(postsDir, filename);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const { data: frontmatter } = matter(fileContent);
+        
+        if (frontmatter.slug === slug) {
+          console.log(`Found matching frontmatter slug in file: ${filename}`);
+          targetFile = filename;
+          break;
+        }
+      }
+    }
+    
+    if (!targetFile) {
+      console.error(`No post found with slug: ${slug} (checked both filenames and frontmatter)`);
       return null;
     }
     

@@ -55,8 +55,15 @@ function getPosts() {
           continue;
         }
         
-        const slug = filename.replace(/\.(md|mdx)$/, '');
-        const post = { ...frontmatter, slug };
+        // Use the filename as the default slug
+        const fileSlug = filename.replace(/\.(md|mdx)$/, '');
+        
+        // Store both the filename-based slug and the frontmatter slug if it exists
+        const post = { 
+          ...frontmatter, 
+          slug: fileSlug,
+          frontmatter_slug: frontmatter.slug // Store the frontmatter slug separately
+        };
         
         // Process image fields
         if (post.feature_image) {
@@ -109,7 +116,12 @@ const handler = async (event, context) => {
       const allPosts = getPosts();
       
       // Find the post with the matching slug
-      const post = allPosts.find(post => post.slug === slug);
+      // Check both the slug property and the frontmatter slug field
+      const post = allPosts.find(post => 
+        post.slug === slug || 
+        (post.slug && post.slug.replace(/\.(md|mdx)$/, '') === slug) ||
+        post.frontmatter_slug === slug
+      );
       
       if (!post) {
         console.log('No post found with slug:', slug);
