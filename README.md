@@ -42,6 +42,7 @@ Choose the option that works best for you:
    - Build command: `npm run build`
    - Publish directory: `public`
 7. Click "Deploy site"
+8. Make sure the `GITHUB_BRANCH` environment variable matches the branch name for each deployment Site  → settings > Build & deploy > Continuous deployment
 
 ### Option B: Direct Deploy (Faster but Limited)
 
@@ -61,6 +62,22 @@ During setup:
 
 
 ---
+
+## Managing Git Access for Clients
+
+To allow non-technical clients to manage blog content through Decap CMS:
+
+1. Have your client create a GitHub account (they will never need to access it again after the initial setup).
+2. Add them as a **collaborator** to their forked repo (the one connected to their Netlify project).
+3. Invite that same email through **Netlify Identity** for CMS access.
+4. Once accepted, they can log in at `/admin` and edit content directly.
+   - Content changes will be committed to Git automatically.
+
+> ⚠️ Without GitHub access, the client will see a “You don’t have sufficient permissions” error in DecapCMS.
+
+> **Important:** The email you invite to Netlify Identity **must also have write access to the connected GitHub repo**, or publishing will fail.
+---
+
 
 ## Configure Environment Variables
 
