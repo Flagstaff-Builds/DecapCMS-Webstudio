@@ -88,17 +88,55 @@ function getPosts() {
 // Create the handler
 const handler = async (event, context) => {
   try {
-    // Get pagination parameters from query string
+    // CRITICAL: Directly access and parse the URL query string to ensure we get the parameters
+    // This is a more direct approach that bypasses potential Netlify quirks with queryStringParameters
+    let page = 1;
+    let limit = 10;
+    
+    // Log the complete event object for debugging
+    console.log('Event path:', event.path);
+    console.log('Event httpMethod:', event.httpMethod);
+    console.log('Event headers:', JSON.stringify(event.headers));
+    
+    // Get query parameters from multiple possible sources
+    const rawQueryString = event.rawQuery || event.rawQueryString || '';
     const queryParams = event.queryStringParameters || {};
     
-    // Log received query parameters for debugging
-    console.log('Received query parameters:', queryParams);
+    console.log('Raw query string:', rawQueryString);
+    console.log('Query parameters object:', JSON.stringify(queryParams));
     
-    const page = parseInt(queryParams.page) || 1;
-    const limit = parseInt(queryParams.limit) || 10;
+    // Parse limit from query parameters object
+    if (queryParams && queryParams.limit) {
+      const parsedLimit = parseInt(queryParams.limit, 10);
+      if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        limit = parsedLimit;
+        console.log(`Found limit in queryStringParameters: ${limit}`);
+      }
+    }
     
-    // Log parsed pagination parameters
-    console.log('Parsed pagination parameters:', { page, limit });
+    // As a fallback, manually parse the raw query string
+    if (rawQueryString) {
+      const params = new URLSearchParams(rawQueryString);
+      if (params.has('limit')) {
+        const rawLimit = params.get('limit');
+        const parsedLimit = parseInt(rawLimit, 10);
+        if (!isNaN(parsedLimit) && parsedLimit > 0) {
+          limit = parsedLimit;
+          console.log(`Found limit in raw query string: ${limit}`);
+        }
+      }
+      
+      if (params.has('page')) {
+        const rawPage = params.get('page');
+        const parsedPage = parseInt(rawPage, 10);
+        if (!isNaN(parsedPage) && parsedPage > 0) {
+          page = parsedPage;
+        }
+      }
+    }
+    
+    // Log final parameters after all parsing attempts
+    console.log('FINAL pagination parameters:', { page, limit });
     
     // Get all posts
     const allPosts = getPosts();
@@ -155,6 +193,12 @@ const handler = async (event, context) => {
           totalPages,
           hasNextPage: endIndex < totalPosts,
           hasPrevPage: startIndex > 0
+        },
+        debug: {
+          requestedLimit: event.queryStringParameters?.limit,
+          parsedLimit: limit,
+          rawQueryString: event.rawQuery || event.rawQueryString || '',
+          queryParams: event.queryStringParameters || {}
         }
       })
     };
