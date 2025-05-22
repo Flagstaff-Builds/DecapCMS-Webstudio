@@ -320,16 +320,24 @@ posts.forEach(post => {
 });
 
 // Create a single posts.json file for the API
-const apiDir = path.join(apiRootDir, 'api');
+const apiDir = path.join(process.cwd(), 'public', 'api');
 if (!fs.existsSync(apiDir)) {
   fs.mkdirSync(apiDir, { recursive: true });
 }
 
+const postsFilePath = path.join(apiDir, 'posts.json');
 fs.writeFileSync(
-  path.join(apiDir, 'posts.json'),
+  postsFilePath,
   JSON.stringify({ posts }, null, 2)
 );
-console.log(`Created API file with ${posts.length} posts`);
+console.log(`Created API file at ${postsFilePath} with ${posts.length} posts`);
+
+// Also create a copy in the root for local development
+const localApiDir = path.join(process.cwd(), 'api');
+if (!fs.existsSync(localApiDir)) {
+  fs.mkdirSync(localApiDir, { recursive: true });
+}
+fs.copyFileSync(postsFilePath, path.join(localApiDir, 'posts.json'));
 
 // Generate index.html with environment variables
 const SITE_TITLE = process.env.SITE_TITLE || 'Blog';

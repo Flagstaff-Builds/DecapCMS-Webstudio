@@ -4,11 +4,14 @@
   "description": "Simple blog with Decap CMS for Webstudio",
   "main": "build.js",
   "scripts": {
-    "build": "node build.js",
+    "build": "node build.js && node build-posts.js",
+    "build:posts": "node build-posts.js",
+    "start": "node server.js",
     "dev": "node server.js",
     "dev:local": "node start-local-cms.js"
   },
   "dependencies": {
+    "@netlify/functions": "^1.5.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "gray-matter": "^4.0.3",
