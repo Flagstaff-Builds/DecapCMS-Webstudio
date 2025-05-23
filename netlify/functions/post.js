@@ -204,6 +204,16 @@ function getPostBySlug(slug) {
       return null;
     }
     
+    // Get the markdown content
+    let markdownContent = '';
+    if (frontmatter.html_content) {
+      // If html_content exists in frontmatter, use that as markdown
+      markdownContent = frontmatter.html_content;
+    } else {
+      // Otherwise use the content from the markdown file
+      markdownContent = content;
+    }
+    
     // Process author data
     let authorData = null;
     if (frontmatter.author && authorMap[frontmatter.author]) {
@@ -234,8 +244,8 @@ function getPostBySlug(slug) {
     const post = { 
       ...frontmatter, 
       slug,
-      content,
-      markdown_content: content, // Include raw markdown content
+      content: markdownContent,
+      markdown_content: markdownContent, // Include raw markdown content
       // Use the properly formatted author data from the map
       author: authorData,
       authors: authorData, // Keep this for backward compatibility
