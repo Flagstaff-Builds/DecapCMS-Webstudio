@@ -27,6 +27,121 @@ function processImagePath(imgPath) {
   return `${SITE_URL}/${finalPath}`;
 }
 
+// Function to load all authors
+function loadAuthors() {
+  try {
+    const authorsDir = path.join(CONTENT_DIR, 'authors');
+    
+    if (!fs.existsSync(authorsDir)) {
+      console.error('Authors directory does not exist:', authorsDir);
+      return {};
+    }
+    
+    const authorFiles = fs.readdirSync(authorsDir);
+    const authorMap = {};
+    
+    for (const filename of authorFiles) {
+      if (!filename.endsWith('.md')) {
+        continue;
+      }
+      
+      const filePath = path.join(authorsDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data } = matter(fileContent);
+      
+      const slug = data.slug || filename.replace('.md', '');
+      
+      // Process author data with proper image URL
+      authorMap[slug] = {
+        name: data.name,
+        slug: slug,
+        image_url: processImagePath(data.image_url),
+        bio: data.bio || null,
+        url: data.url || null
+      };
+    }
+    
+    return authorMap;
+  } catch (error) {
+    console.error('Error loading authors:', error);
+    return {};
+  }
+}
+
+// Function to load all categories
+function loadCategories() {
+  try {
+    const categoriesDir = path.join(CONTENT_DIR, 'categories');
+    
+    if (!fs.existsSync(categoriesDir)) {
+      console.error('Categories directory does not exist:', categoriesDir);
+      return {};
+    }
+    
+    const categoryFiles = fs.readdirSync(categoriesDir);
+    const categoryMap = {};
+    
+    for (const filename of categoryFiles) {
+      if (!filename.endsWith('.md')) {
+        continue;
+      }
+      
+      const filePath = path.join(categoriesDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data } = matter(fileContent);
+      
+      const slug = data.slug || filename.replace('.md', '');
+      
+      categoryMap[slug] = {
+        name: data.name,
+        slug: slug
+      };
+    }
+    
+    return categoryMap;
+  } catch (error) {
+    console.error('Error loading categories:', error);
+    return {};
+  }
+}
+
+// Function to load all tags
+function loadTags() {
+  try {
+    const tagsDir = path.join(CONTENT_DIR, 'tags');
+    
+    if (!fs.existsSync(tagsDir)) {
+      console.error('Tags directory does not exist:', tagsDir);
+      return {};
+    }
+    
+    const tagFiles = fs.readdirSync(tagsDir);
+    const tagMap = {};
+    
+    for (const filename of tagFiles) {
+      if (!filename.endsWith('.md')) {
+        continue;
+      }
+      
+      const filePath = path.join(tagsDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data } = matter(fileContent);
+      
+      const slug = data.slug || filename.replace('.md', '');
+      
+      tagMap[slug] = {
+        name: data.name,
+        slug: slug
+      };
+    }
+    
+    return tagMap;
+  } catch (error) {
+    console.error('Error loading tags:', error);
+    return {};
+  }
+}
+
 // Function to get all posts
 function getPosts() {
   try {
@@ -36,6 +151,11 @@ function getPosts() {
       console.error('Posts directory does not exist:', postsDir);
       return [];
     }
+    
+    // Load all authors, categories, and tags first
+    const authorMap = loadAuthors();
+    const categoryMap = loadCategories();
+    const tagMap = loadTags();
     
     const postFiles = fs.readdirSync(postsDir);
     const posts = [];
@@ -58,19 +178,43 @@ function getPosts() {
         // Use the filename as the default slug
         const fileSlug = filename.replace(/\.(md|mdx)$/, '');
         
+        // Process author data
+        let authorData = null;
+        if (frontmatter.author && authorMap[frontmatter.author]) {
+          authorData = authorMap[frontmatter.author];
+        } else if (frontmatter.authors && Array.isArray(frontmatter.authors) && frontmatter.authors.length > 0) {
+          // Handle legacy authors array format
+          const authorSlug = frontmatter.authors[0];
+          if (authorMap[authorSlug]) {
+            authorData = authorMap[authorSlug];
+          }
+        }
+        
+        // Process category data
+        let categoryData = null;
+        if (frontmatter.category && categoryMap[frontmatter.category]) {
+          categoryData = categoryMap[frontmatter.category];
+        }
+        
+        // Process tags data
+        let tagData = [];
+        if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
+          tagData = frontmatter.tags
+            .filter(tagSlug => tagMap[tagSlug])
+            .map(tagSlug => tagMap[tagSlug]);
+        }
+        
         // Store both the filename-based slug and the frontmatter slug if it exists
         const post = { 
           ...frontmatter, 
           slug: fileSlug,
           frontmatter_slug: frontmatter.slug, // Store the frontmatter slug separately
           markdown_content: content, // Include raw markdown content
-          // Enhance author information if it exists as a string
-          author: typeof frontmatter.author === 'string' ? {
-            name: frontmatter.author,
-            profile_image: frontmatter.author_image || null,
-            bio: frontmatter.author_bio || null,
-            url: frontmatter.author_url || null
-          } : frontmatter.author
+          // Use the properly formatted author data from the map
+          author: authorData,
+          authors: authorData, // Keep this for backward compatibility
+          category: categoryData,
+          tags: tagData
         };
         
         // Process image fields
