@@ -175,6 +175,16 @@ function getPosts() {
           continue;
         }
         
+        // Get the markdown content
+        let markdownContent = '';
+        if (frontmatter.html_content) {
+          // If html_content exists in frontmatter, use that as markdown
+          markdownContent = frontmatter.html_content;
+        } else {
+          // Otherwise use the content from the markdown file
+          markdownContent = content;
+        }
+        
         // Use the filename as the default slug
         const fileSlug = filename.replace(/\.(md|mdx)$/, '');
         
@@ -209,7 +219,7 @@ function getPosts() {
           ...frontmatter, 
           slug: fileSlug,
           frontmatter_slug: frontmatter.slug, // Store the frontmatter slug separately
-          markdown_content: content, // Include raw markdown content
+          markdown_content: markdownContent, // Include raw markdown content
           // Use the properly formatted author data from the map
           author: authorData,
           authors: authorData, // Keep this for backward compatibility
