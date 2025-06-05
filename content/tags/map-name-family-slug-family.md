@@ -1,4 +1,4 @@
 ---
-name: Small-town
-slug: small-town
+name: Alberta
+slug: alberta
 ---
