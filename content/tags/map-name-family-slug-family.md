@@ -1,4 +1,4 @@
 ---
-name: Farm life
-slug: farm-life
+name: Public speaking
+slug: public-speaking
 ---
