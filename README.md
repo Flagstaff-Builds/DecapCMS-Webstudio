@@ -21,6 +21,7 @@ A straightforward blog setup that connects **Decap CMS** with **Webstudio**. It 
   - [Option B: Direct Deploy](#option-b-direct-deploy-faster-but-limited)
   - [Configure Environment Variables](#configure-environment-variables)
   - [Set Up Authentication](#set-up-authentication)
+- [Fork & Customer Branch Workflow](#fork--customer-branch-workflow)
 - [Documentation](#documentation)
 
 
@@ -33,7 +34,7 @@ Choose the option that works best for you:
 
 > **Why fork first?** Forking gives you your own copy of the repository, allowing you to receive updates, maintain version history, and fully control your content through Git.
 
-1. Click the "Fork" button at the top-right of [this repository](https://github.com/Flagstaff-Builds/DecapCMS-Webstudio)
+1. Click the "Fork" button at the top-right of [this repository](https://github.com/null1979/DecapCMS-Webstudio)
 2. Wait for the forking process to complete
 3. Go to [Netlify](https://app.netlify.com/)
 4. Click "Add new site" → "Import an existing project"
@@ -50,7 +51,7 @@ Choose the option that works best for you:
 
 Click the button below to deploy directly to Netlify:
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Flagstaff-Builds/DecapCMS-Webstudio)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/null1979/DecapCMS-Webstudio)
 
 During setup:
 1. Follow the prompts to connect to GitHub
@@ -126,12 +127,47 @@ Decap CMS supports different publishing workflows that can be configured using t
 
 You can configure the publish mode by setting the `PUBLISH_MODE` environment variable in your Netlify environment variables or in your local `.env` file.
 
+## Fork & Customer Branch Workflow
+
+This template is designed to support multiple customers with isolated content while receiving template updates:
+
+### How It Works
+1. **Main branch** contains the template with sample data
+2. **Customer branches** contain customer-specific content
+3. **Protected directories** (`/content/` and `/images/uploads/`) prevent merge conflicts
+4. **`.gitattributes` file** ensures customer content is never overwritten during updates
+
+### For New Customers
+1. Fork this repository
+2. Create a customer-specific branch: `git checkout -b customer-yourname`
+3. Configure Netlify to deploy from your customer branch
+4. Customize the sample content or start fresh
+5. All your content changes are isolated to your branch
+
+### Syncing Template Updates
+When updates are available in the original template:
+```bash
+# Add upstream remote (one time)
+git remote add upstream https://github.com/null1979/DecapCMS-Webstudio.git
+
+# Sync updates (periodic)
+git fetch upstream
+git checkout customer-yourname
+git merge upstream/main
+git push
+```
+
+Your content in `/content/` and `/images/uploads/` will be preserved during merges.
+
+For detailed instructions, see [Fork & Sync Workflow Guide](docs/fork-sync-workflow.md).
+
 ## Documentation
 
 For more detailed instructions and guides, please refer to the following documentation:
-- [Content Management Guide](docs/content-management.md)
-- [Webstudio Integration Guide](docs/webstudio-integration.md)
-- [Troubleshooting Guide](docs/troubleshooting.md)
+- [Fork & Sync Workflow Guide](docs/fork-sync-workflow.md) - Detailed guide for managing customer forks
+- [Content Management Guide](docs/content-management.md) - How to manage blog content
+- [Webstudio Integration Guide](docs/webstudio-integration.md) - Connecting to Webstudio
+- [Troubleshooting Guide](docs/troubleshooting.md) - Common issues and solutions
 
 ## Need Help?
 
