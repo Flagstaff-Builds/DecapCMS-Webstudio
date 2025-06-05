@@ -168,10 +168,12 @@ function getAllPostsForNavigation() {
         continue;
       }
       
-      const slug = frontmatter.slug || filename.replace(/\.(md|mdx)$/, '');
+      // Use filename-based slug as the primary slug (to match how posts are looked up)
+      const fileSlug = filename.replace(/\.(md|mdx)$/, '');
       
       posts.push({
-        slug: slug,
+        slug: fileSlug,  // Use filename-based slug to match getPostBySlug behavior
+        frontmatter_slug: frontmatter.slug,  // Store frontmatter slug separately if needed
         title: frontmatter.title,
         published_at: frontmatter.published_at || frontmatter.date || new Date().toISOString()
       });
@@ -290,9 +292,14 @@ function getPostBySlug(slug) {
     }
     
     // Enhance the post object with additional fields
+    // Use the filename-based slug for consistency with navigation
+    const fileSlug = targetFile.replace(/\.(md|mdx)$/, '');
+    
     const post = { 
       ...frontmatter, 
-      slug,
+      slug: fileSlug,  // Use filename-based slug for navigation consistency
+      frontmatter_slug: frontmatter.slug,  // Keep the frontmatter slug if it exists
+      url_slug: slug,  // Keep the original requested slug
       content: markdownContent,
       markdown_content: markdownContent, // Include raw markdown content
       // Use the properly formatted author data from the map
@@ -405,7 +412,8 @@ const handler = async (event, context) => {
     const allPosts = getAllPostsForNavigation();
     
     // Find the current post index
-    const currentIndex = allPosts.findIndex(p => p.slug === slug);
+    // Since we're now using filename-based slugs consistently, we should find it by matching the post.slug
+    const currentIndex = allPosts.findIndex(p => p.slug === post.slug);
     
     // Get next and previous posts
     let nextPost = null;
@@ -414,17 +422,21 @@ const handler = async (event, context) => {
     if (currentIndex !== -1) {
       // Previous post (newer post in the list)
       if (currentIndex > 0) {
+        const prevPostData = allPosts[currentIndex - 1];
         prevPost = {
-          slug: allPosts[currentIndex - 1].slug,
-          title: allPosts[currentIndex - 1].title
+          // Use frontmatter slug if available, otherwise use filename slug
+          slug: prevPostData.frontmatter_slug || prevPostData.slug,
+          title: prevPostData.title
         };
       }
       
       // Next post (older post in the list)
       if (currentIndex < allPosts.length - 1) {
+        const nextPostData = allPosts[currentIndex + 1];
         nextPost = {
-          slug: allPosts[currentIndex + 1].slug,
-          title: allPosts[currentIndex + 1].title
+          // Use frontmatter slug if available, otherwise use filename slug
+          slug: nextPostData.frontmatter_slug || nextPostData.slug,
+          title: nextPostData.title
         };
       }
     }
