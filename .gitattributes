@@ -1,0 +1,11 @@
+# Tell Git to use 'ours' merge strategy for content and uploads
+# This means when merging, keep the version from the current branch
+content/** merge=ours
+images/uploads/** merge=ours
+
+# For binary files, ensure they're treated as binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
