@@ -1,4 +1,4 @@
 ---
-name: Alberta
-slug: alberta
+name: Farm life
+slug: farm-life
 ---
