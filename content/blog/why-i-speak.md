@@ -17,7 +17,13 @@ html_content: >-
   Over time, I saw how those stories weren’t just mine. They were echoes of what other people had lived through, too.
 
 
-  I speak because connection matters. I speak because sometimes someone in the room needs to know they’re not alone. And I speak because we all need encouragement now and then — the kind that feels real.
+  I speak because connection matters.
+
+
+  I speak because sometimes someone in the room needs to know they’re not alone.
+
+
+  And I speak because we all need encouragement now and then, the kind that feels real.
 published_at: 2025-06-04T02:00:00.000Z
 category: speaking-events
 tags:
