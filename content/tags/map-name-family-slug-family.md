@@ -1,4 +1,4 @@
 ---
-name: Family
-slug: family
+name: Small-town
+slug: small-town
 ---
