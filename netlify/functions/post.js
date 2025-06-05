@@ -142,6 +142,55 @@ function loadTags() {
   }
 }
 
+// Function to get all posts for navigation
+function getAllPostsForNavigation() {
+  try {
+    const postsDir = path.join(CONTENT_DIR, 'blog');
+    
+    if (!fs.existsSync(postsDir)) {
+      return [];
+    }
+    
+    const postFiles = fs.readdirSync(postsDir);
+    const posts = [];
+    
+    for (const filename of postFiles) {
+      if (!filename.endsWith('.md') && !filename.endsWith('.mdx')) {
+        continue;
+      }
+      
+      const filePath = path.join(postsDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data: frontmatter } = matter(fileContent);
+      
+      // Skip drafts unless we're in development
+      if (frontmatter.draft && process.env.CONTEXT !== 'development') {
+        continue;
+      }
+      
+      const slug = frontmatter.slug || filename.replace(/\.(md|mdx)$/, '');
+      
+      posts.push({
+        slug: slug,
+        title: frontmatter.title,
+        published_at: frontmatter.published_at || frontmatter.date || new Date().toISOString()
+      });
+    }
+    
+    // Sort posts by published_at date (newest first)
+    posts.sort((a, b) => {
+      const dateA = new Date(a.published_at);
+      const dateB = new Date(b.published_at);
+      return dateB - dateA;
+    });
+    
+    return posts;
+  } catch (error) {
+    console.error('Error getting all posts for navigation:', error);
+    return [];
+  }
+}
+
 // Function to get a single post by slug
 function getPostBySlug(slug) {
   try {
@@ -352,6 +401,43 @@ const handler = async (event, context) => {
       };
     }
     
+    // Get all posts for navigation
+    const allPosts = getAllPostsForNavigation();
+    
+    // Find the current post index
+    const currentIndex = allPosts.findIndex(p => p.slug === slug);
+    
+    // Get next and previous posts
+    let nextPost = null;
+    let prevPost = null;
+    
+    if (currentIndex !== -1) {
+      // Previous post (newer post in the list)
+      if (currentIndex > 0) {
+        prevPost = {
+          slug: allPosts[currentIndex - 1].slug,
+          title: allPosts[currentIndex - 1].title
+        };
+      }
+      
+      // Next post (older post in the list)
+      if (currentIndex < allPosts.length - 1) {
+        nextPost = {
+          slug: allPosts[currentIndex + 1].slug,
+          title: allPosts[currentIndex + 1].title
+        };
+      }
+    }
+    
+    // Add navigation data to the post
+    const postWithNavigation = {
+      ...post,
+      navigation: {
+        next: nextPost,
+        previous: prevPost
+      }
+    };
+    
     // Format the response to match what Webstudio expects
     return {
       statusCode: 200,
@@ -361,7 +447,7 @@ const handler = async (event, context) => {
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, OPTIONS'
       },
-      body: JSON.stringify(post) // Return just the post object directly
+      body: JSON.stringify(postWithNavigation) // Return the post object with navigation
     };
   } catch (error) {
     console.error('Handler error:', error);
