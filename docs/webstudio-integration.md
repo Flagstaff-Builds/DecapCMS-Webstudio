@@ -70,6 +70,41 @@ This guide explains how to connect your Decap CMS blog to a Webstudio site.
 
 > **Note**: If you're using the `/api/posts` endpoint with a slug parameter instead, the URL would be `/api/posts?slug=${system.params.slug}`
 
+### Add Previous/Next Post Navigation
+
+The individual post endpoint now includes navigation data for previous and next posts. Here's how to implement post navigation in Webstudio:
+
+1. **Add Navigation Links:**
+   - For the Previous Post link:
+     - Set visibility condition to: `${blogPost.navigation.previous ? true : false}`
+     - Set the href to: `/blog/${blogPost.navigation.previous.slug}`
+     - Display the title: `${blogPost.navigation.previous.title}`
+   
+   - For the Next Post link:
+     - Set visibility condition: `${blogPost.navigation.next ? true : false}`
+     - Set the href to: `/blog/${blogPost.navigation.next.slug}`
+     - Display the title: `${blogPost.navigation.next.title}`
+
+2. **Navigation Data Structure:**
+   The post endpoint returns navigation data in this format:
+   ```json
+   {
+     "navigation": {
+       "previous": {
+         "slug": "newer-post-slug",
+         "title": "Newer Post Title"
+       },
+       "next": {
+         "slug": "older-post-slug",
+         "title": "Older Post Title"
+       }
+     }
+   }
+   ```
+   - `previous` points to the newer post (published more recently)
+   - `next` points to the older post (published earlier)
+   - Either can be `null` if there's no previous/next post
+
 ### Implement Pagination
 
 To implement pagination for your blog listing page:
@@ -177,6 +212,54 @@ GET /api/posts?page=1&limit=10
 ### Get Single Post
 ```
 GET /blog/post-slug.json
+```
+
+Or using the API endpoint:
+```
+GET /api/post?slug=post-slug
+```
+
+**Example Response:**
+```json
+{
+  "title": "Post Title",
+  "slug": "post-slug",
+  "content": "Full post content...",
+  "html_content": "<p>Full post content...</p>",
+  "markdown_content": "Full post content...",
+  "published_at": "2024-01-01T00:00:00Z",
+  "feature_image": {
+    "url": "/images/example.jpg",
+    "alt": "Alt text",
+    "title": "Image title"
+  },
+  "author": {
+    "name": "Author Name",
+    "slug": "author-slug",
+    "image_url": "/images/author.jpg",
+    "bio": "Author bio..."
+  },
+  "category": {
+    "name": "Category Name",
+    "slug": "category-slug"
+  },
+  "tags": [
+    {
+      "name": "Tag Name",
+      "slug": "tag-slug"
+    }
+  ],
+  "navigation": {
+    "previous": {
+      "slug": "newer-post-slug",
+      "title": "Newer Post Title"
+    },
+    "next": {
+      "slug": "older-post-slug",
+      "title": "Older Post Title"
+    }
+  }
+}
 ```
 
 ### Categories
