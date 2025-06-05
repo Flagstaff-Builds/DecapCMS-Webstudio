@@ -1,7 +1,9 @@
-# Tell Git to use 'ours' merge strategy for content and uploads
-# This means when merging, keep the version from the current branch
-content/** merge=ours
-images/uploads/** merge=ours
+# Protect content and uploads during merges
+# This ensures customer content is never overwritten when merging template updates
+
+# Always keep the current branch's version of content and uploads
+/content/** merge=ours
+/images/uploads/** merge=ours
 
 # For binary files, ensure they're treated as binary
 *.jpg binary
