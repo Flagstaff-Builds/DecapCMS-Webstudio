@@ -2,13 +2,57 @@
 
 This guide explains how to connect your Decap CMS blog to a Webstudio site.
 
-## Setting Up Resources in Webstudio
-
 ## Table of Contents
+- [Embedding the CMS Editor](#embedding-the-cms-editor)
+- [Setting Up Resources in Webstudio](#setting-up-resources-in-webstudio)
 - [Create a Listing Page](#create-a-listing-page)
 - [Create a Dynamic Post Page](#create-a-dynamic-post-page)
 - [Implement Pagination](#implement-pagination)
 - [Display Limited Posts](#display-limited-posts)
+
+## Embedding the CMS Editor
+
+The CMS is now optimized for iframe embedding at `/admin/cms/`. This allows you to create a seamless content management experience within your Webstudio site.
+
+### Creating an Edit Page in Webstudio
+
+1. In Webstudio, create a new page at `/admin/edit-blogs`
+2. Add an HTML Embed component with the following code:
+
+```html
+<iframe 
+    src="/admin/cms/"
+    style="width: 100%; height: 100vh; border: none;"
+    title="Blog Content Management System"
+    id="cms-iframe">
+</iframe>
+
+<script>
+// Optional: Handle dynamic height adjustments
+window.addEventListener('message', function(event) {
+    if (event.origin !== window.location.origin) return;
+    
+    if (event.data.type === 'cms-height') {
+        document.getElementById('cms-iframe').style.height = event.data.height + 'px';
+    }
+});
+</script>
+```
+
+### Benefits of Iframe Embedding
+
+- **Seamless Integration**: The CMS appears as part of your Webstudio site
+- **Security**: Can be protected with Cloudflare Access at the `/admin/*` path
+- **Consistent UI**: Maintain your site's header/navigation while editing content
+- **Mobile Friendly**: The CMS adapts to different screen sizes
+
+### Testing the Integration
+
+1. Visit `/admin/edit-blogs-example.html` to see a working example
+2. The example shows how to properly embed and style the CMS
+3. Use this as a reference when building your Webstudio page
+
+## Setting Up Resources in Webstudio
 
 ### Create a Listing Page
 
