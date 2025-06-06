@@ -21,7 +21,28 @@ app.use((req, res, next) => {
   // Check if request is for config.yml in either admin path
   if (req.path === '/admin/config.yml' || req.path === '/admin/cms/config.yml') {
     try {
-      // Generate config using the same logic as Netlify function
+      // First check if a config.yml file exists
+      const configPath = path.join(__dirname, 'public', 'admin', 'config.yml');
+      
+      if (fs.existsSync(configPath)) {
+        // Read and process the existing config.yml file
+        let configContent = fs.readFileSync(configPath, 'utf8');
+        
+        // Replace environment variables (restore original functionality)
+        configContent = configContent
+          .replace(/\${GITHUB_BRANCH}/g, process.env.GITHUB_BRANCH || 'main')
+          .replace(/\${MEDIA_FOLDER}/g, process.env.MEDIA_FOLDER || 'images/uploads')
+          .replace(/\${PUBLIC_FOLDER}/g, process.env.PUBLIC_FOLDER || '/images/uploads')
+          .replace(/\${CONTENT_FOLDER}/g, process.env.CONTENT_FOLDER || 'content/blog')
+          .replace(/\${SITE_URL}/g, process.env.SITE_URL || 'https://your-site-url.netlify.app')
+          .replace(/\${PUBLISH_MODE}/g, process.env.PUBLISH_MODE || '');
+        
+        // Serve the processed content
+        res.setHeader('Content-Type', 'text/yaml');
+        return res.send(configContent);
+      }
+      
+      // If no config.yml file exists, generate config dynamically
       const config = `backend:
   name: git-gateway
   branch: ${process.env.GITHUB_BRANCH || 'main'}
