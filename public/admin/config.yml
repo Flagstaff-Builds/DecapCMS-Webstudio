@@ -1,18 +1,18 @@
 backend:
   name: git-gateway
-  branch: flagstaff-websites
+  branch: ${GITHUB_BRANCH}
   accept_roles: [admin, editor]
 
 # Media files will be stored in the repo under images/uploads
-media_folder: "images/uploads"
-public_folder: "/images/uploads"
+media_folder: "${MEDIA_FOLDER}"
+public_folder: "${PUBLIC_FOLDER}"
 
 # Publish mode configuration
-publish_mode: simple
+publish_mode: ${PUBLISH_MODE}
 
 # Set site URL
-site_url: https://decapcms-webstudio.pages.dev
-display_url: https://decapcms-webstudio.pages.dev
+site_url: ${SITE_URL}
+display_url: ${SITE_URL}
 
 # Collections for blog and related content
 collections:
