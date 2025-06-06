@@ -87,7 +87,10 @@ function getAllPosts() {
 }
 
 // Export the function for the Netlify function to use
-module.exports = { getPosts: getAllPosts };
+module.exports = {
+  getPosts: getAllPosts,
+  processImagePath,
+};
 
 // If run directly, generate the posts.json file
 if (require.main === module) {
