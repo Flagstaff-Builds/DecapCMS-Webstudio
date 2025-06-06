@@ -4,6 +4,9 @@ const { spawnSync } = require('child_process');
 const matter = require('gray-matter');
 const marked = require('marked');
 require('dotenv').config();
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
+const DOMPurify = createDOMPurify(new JSDOM('').window);
 
 // Get site URL from environment variables
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
@@ -170,7 +173,7 @@ const posts = blogFiles.map(filename => {
   const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
   
   // Store both markdown and HTML versions
-  const htmlContent = marked.parse(processedMarkdownContent);
+  const htmlContent = DOMPurify.sanitize(marked.parse(processedMarkdownContent));
   
   // Process relationships
   let categoryData = null;
