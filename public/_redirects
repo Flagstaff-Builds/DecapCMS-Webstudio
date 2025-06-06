@@ -14,6 +14,9 @@
 /api/posts /api/posts.json 200
 /api/post /api/posts.json 200
 /api/debug /api/debug.json 200
+/api/movies /api/movies.json 200
+/api/movie /api/movies.json 200
+/api/tmdb /api/tmdb.json 200
 
 # Blog pages
 /blog/* /blog/:splat 200
