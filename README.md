@@ -12,7 +12,8 @@ A straightforward blog setup that connects **Decap CMS** with **Webstudio**. It 
 | Feature images for posts         | Add images to your blog posts                |
 | No coding needed                 | Formatting and layout handled automatically  |
 | Connects to Webstudio            | Posts show up on your Webstudio site         |
-| Free hosting with Netlify        | No servers or databases to manage            |
+| Multi-platform hosting           | Deploy to Netlify or Cloudflare Pages        |
+| Iframe embedding ready           | CMS at `/admin/cms/` for seamless integration|
 | Works on mobile too              | Update content from anywhere                 |
 
 ## Table of Contents
@@ -161,9 +162,34 @@ Your content in `/content/` and `/images/uploads/` will be preserved during merg
 
 For detailed instructions, see [Fork & Sync Workflow Guide](docs/fork-sync-workflow.md).
 
+## Platform Support
+
+This template supports deployment to multiple platforms:
+
+### Netlify (Original)
+- Built-in authentication with Netlify Identity
+- Automatic Git Gateway setup
+- Serverless functions for dynamic configuration
+- See setup instructions above
+
+### Cloudflare Pages (New)
+- Better global performance with Cloudflare CDN
+- Cloudflare Access for authentication and protection
+- Support for `/admin/*` path protection
+- See [Cloudflare Pages Setup Guide](docs/cloudflare-pages-setup.md)
+
+## CMS Access Points
+
+The CMS is available at multiple endpoints for flexibility:
+
+- **Primary (New)**: `/admin/cms/` - Optimized for iframe embedding
+- **Legacy**: `/admin/` - Original location, maintained for backwards compatibility
+- **Local Testing**: `/admin/cms/local.html` or `/admin/local.html`
+
 ## Documentation
 
 For more detailed instructions and guides, please refer to the following documentation:
+- [Cloudflare Pages Setup Guide](docs/cloudflare-pages-setup.md) - Deploy to Cloudflare Pages
 - [Fork & Sync Workflow Guide](docs/fork-sync-workflow.md) - Detailed guide for managing customer forks
 - [Content Management Guide](docs/content-management.md) - How to manage blog content
 - [Webstudio Integration Guide](docs/webstudio-integration.md) - Connecting to Webstudio

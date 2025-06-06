@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Content Manager (Local Test)</title>
+    <!-- Include roboto font for material UI -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <style>
+      /* Reset for iframe embedding */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: 'Roboto', sans-serif;
+      }
+      
+      .local-backend-notice {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        padding: 10px 20px;
+        text-align: center;
+        color: #495057;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+      
+      .local-backend-notice strong {
+        color: #0d6efd;
+      }
+      
+      /* Ensure CMS content takes remaining height */
+      .cms-container {
+        height: calc(100vh - 44px); /* Subtract notice height */
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      
+      /* Fix for menu display issues */
+      .css-1hvrgvd-CollectionTopContainer-card-cardTop,
+      .css-1j3zqss-CardCollection-cardCollection-card-cardTop,
+      .css-1q15ej8-ControlContainer,
+      .css-d9lfc3-ToolbarContainer,
+      .css-1f7nhiq-CollectionContainer-card-cardTop,
+      .css-1hvrgvd-CollectionTopContainer-card-cardTop {
+        max-width: 100% !important;
+        width: 100% !important;
+        overflow: visible !important;
+      }
+      
+      /* Fix for dropdown menus */
+      .css-1k3lxu1-DropdownList,
+      .css-1j67qj1-DropdownList,
+      .css-11yjrqa-DropdownList {
+        max-height: 300px !important;
+        overflow-y: auto !important;
+        z-index: 999 !important;
+      }
+      
+      /* Ensure form fields are properly sized */
+      .css-1o58c3p-ControlContainer,
+      .css-p5sjac-ControlContainer {
+        width: 100% !important;
+      }
+      
+      /* Fix for collection view */
+      .css-1f3mf5k-StyledMainContainer,
+      .css-1f7nhiq-CollectionContainer-card-cardTop {
+        overflow: visible !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="local-backend-notice">
+      <strong>Local Test Mode:</strong> Changes will not be saved permanently. This is a local test environment using the test-repo backend.
+    </div>
+    
+    <div class="cms-container">
+      <!-- Include the script that builds the page and powers Decap CMS -->
+      <script src="https://unpkg.com/netlify-cms@^2.10.192/dist/netlify-cms.js"></script>
+      
+      <script>
+        // Configure the CMS manually
+        window.CMS_MANUAL_INIT = true;
+        
+        // Initialize CMS with test-repo backend
+        window.addEventListener('load', function() {
+          CMS.init({
+            config: {
+              // Disable config file loading
+              load_config_file: false,
+              
+              // Use test-repo backend which works completely offline
+              backend: {
+                name: 'test-repo'
+              },
+              
+              // Basic media configuration
+              media_folder: "images/uploads",
+              public_folder: "/images/uploads",
+              
+              // Define collections directly in the config
+              collections: [
+                {
+                  name: "blog",
+                  label: "Blog",
+                  folder: "content/blog",
+                  create: true,
+                  slug: "{{slug}}",
+                  fields: [
+                    { label: "Title", name: "title", widget: "string" },
+                    { label: "Slug", name: "slug", widget: "string" },
+                    { label: "Excerpt", name: "excerpt", widget: "text", required: false },
+                    {
+                      label: "Feature Image",
+                      name: "feature_image",
+                      widget: "object",
+                      required: false,
+                      fields: [
+                        { label: "Image", name: "url", widget: "image", required: true },
+                        { label: "Alt Text", name: "alt", widget: "string", required: false },
+                        { label: "Title", name: "title", widget: "string", required: false }
+                      ]
+                    },
+                    { label: "HTML Content", name: "html_content", widget: "markdown" },
+                    { label: "Published At", name: "published_at", widget: "datetime" },
+                    {
+                      label: "Category",
+                      name: "category",
+                      widget: "relation",
+                      collection: "categories",
+                      search_fields: ["name"],
+                      value_field: "slug",
+                      display_fields: ["name"],
+                      required: false
+                    },
+                    {
+                      label: "Tags",
+                      name: "tags",
+                      widget: "relation",
+                      collection: "tags",
+                      search_fields: ["name"],
+                      value_field: "slug",
+                      display_fields: ["name"],
+                      multiple: true,
+                      required: false
+                    },
+                    {
+                      label: "Author",
+                      name: "author",
+                      widget: "relation",
+                      collection: "authors",
+                      search_fields: ["name"],
+                      value_field: "slug",
+                      display_fields: ["name"],
+                      required: false
+                    }
+                  ]
+                },
+                {
+                  name: "categories",
+                  label: "Categories",
+                  folder: "content/categories",
+                  create: true,
+                  slug: "{{slug}}",
+                  fields: [
+                    { label: "Name", name: "name", widget: "string" },
+                    { label: "Slug", name: "slug", widget: "string" }
+                  ]
+                },
+                {
+                  name: "tags",
+                  label: "Tags",
+                  folder: "content/tags",
+                  create: true,
+                  slug: "{{slug}}",
+                  fields: [
+                    { label: "Name", name: "name", widget: "string" },
+                    { label: "Slug", name: "slug", widget: "string" }
+                  ]
+                },
+                {
+                  name: "authors",
+                  label: "Authors",
+                  folder: "content/authors",
+                  create: true,
+                  slug: "{{slug}}",
+                  fields: [
+                    { label: "Name", name: "name", widget: "string" },
+                    { label: "Slug", name: "slug", widget: "string" },
+                    { label: "Image URL", name: "image_url", widget: "image", required: false },
+                    { label: "Website", name: "website", widget: "string", required: false },
+                    { label: "Twitter", name: "twitter", widget: "string", required: false },
+                    { label: "Bio", name: "bio", widget: "text", required: false }
+                  ]
+                }
+              ]
+            }
+          });
+          
+          // Post height to parent if in iframe
+          if (window.parent !== window) {
+            setInterval(function() {
+              const height = document.documentElement.scrollHeight;
+              window.parent.postMessage({
+                type: 'cms-height',
+                height: height
+              }, '*');
+            }, 500);
+          }
+        });
+        
+        // Add error handling
+        window.addEventListener('error', function(event) {
+          console.error('Global error caught:', event.error);
+        });
+      </script>
+    </div>
+  </body>
+</html>

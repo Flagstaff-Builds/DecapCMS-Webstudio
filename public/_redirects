@@ -1,0 +1,24 @@
+# Redirects for Cloudflare Pages
+
+# Handle invite tokens
+/#invite_token=* /admin/cms/#invite_token=:splat 301
+
+# Admin CMS specific redirects
+/admin/cms/config.yml /.netlify/functions/config 200
+/admin/cms/* /admin/cms/index.html 200
+
+# Admin general redirect (keep existing admin for backwards compatibility)
+/admin/config.yml /.netlify/functions/config 200
+/admin/* /admin/index.html 200
+
+# API endpoints - Cloudflare doesn't support functions like Netlify
+# These will need to be handled by Cloudflare Workers or served as static files
+/api/posts /api/posts.json 200
+/api/post /api/posts.json 200
+/api/debug /api/debug.json 200
+
+# Blog pages
+/blog/* /blog/:splat 200
+
+# SPA fallback
+/* /index.html 200

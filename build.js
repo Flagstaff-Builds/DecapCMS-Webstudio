@@ -394,6 +394,23 @@ fs.writeFileSync(
   JSON.stringify({ authors }, null, 2)
 );
 
+// Copy _headers and _redirects if they exist (for platform compatibility)
+const headersPath = path.join(process.cwd(), '_headers');
+const redirectsPath = path.join(process.cwd(), '_redirects');
+const publicHeadersPath = path.join(apiRootDir, '_headers');
+const publicRedirectsPath = path.join(apiRootDir, '_redirects');
+
+// Only copy if source files exist and destination doesn't
+if (fs.existsSync(headersPath) && !fs.existsSync(publicHeadersPath)) {
+  fs.copyFileSync(headersPath, publicHeadersPath);
+  console.log('Copied _headers to public directory');
+}
+
+if (fs.existsSync(redirectsPath) && !fs.existsSync(publicRedirectsPath)) {
+  fs.copyFileSync(redirectsPath, publicRedirectsPath);
+  console.log('Copied _redirects to public directory');
+}
+
 // Create a sample post if there are no posts
 if (posts.length === 0) {
   console.log('No posts found. Creating sample content...');
