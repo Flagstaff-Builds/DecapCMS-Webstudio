@@ -4,11 +4,9 @@
 /#invite_token=* /admin/cms/#invite_token=:splat 301
 
 # Admin CMS specific redirects
-/admin/cms/config.yml /.netlify/functions/config 200
 /admin/cms/* /admin/cms/index.html 200
 
 # Admin general redirect (keep existing admin for backwards compatibility)
-/admin/config.yml /.netlify/functions/config 200
 /admin/* /admin/index.html 200
 
 # API endpoints - Cloudflare doesn't support functions like Netlify
