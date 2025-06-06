@@ -19,18 +19,29 @@
 # Redirects
 [[redirects]]
   from = "/#invite_token=*"
-  to = "/admin/#invite_token=:splat"
+  to = "/admin/cms/#invite_token=:splat"
   status = 301
   force = true
 
-# Use dynamic config.yml from function - MUST be before the general admin redirect
+# CMS at /admin/cms redirects
+[[redirects]]
+  from = "/admin/cms/config.yml"
+  to = "/.netlify/functions/config"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/admin/cms/*"
+  to = "/admin/cms/index.html"
+  status = 200
+
+# Legacy admin support (backwards compatibility)
 [[redirects]]
   from = "/admin/config.yml"
   to = "/.netlify/functions/config"
   status = 200
   force = true
 
-# Admin redirects (general rule comes AFTER specific rules)
 [[redirects]]
   from = "/admin/*"
   to = "/admin/index.html"
