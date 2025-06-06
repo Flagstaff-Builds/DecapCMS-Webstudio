@@ -89,3 +89,6 @@ collections:
       - { label: "Website", name: "website", widget: "string", required: false }
       - { label: "Twitter", name: "twitter", widget: "string", required: false }
       - { label: "Bio", name: "bio", widget: "text", required: false }
+
+# MOVIE_COLLECTION_PLACEHOLDER
+

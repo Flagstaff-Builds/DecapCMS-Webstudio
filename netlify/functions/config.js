@@ -97,6 +97,21 @@ collections:
       - { label: "Website", name: "website", widget: "string", required: false }
       - { label: "Twitter", name: "twitter", widget: "string", required: false }
       - { label: "Bio", name: "bio", widget: "text", required: false }
+${process.env.COLLECTION_MOVIE === 'true' ? `
+  - name: "movies"
+    label: "Movies"
+    folder: "content/movies"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string" }
+      - { label: "TMDB ID", name: "tmdb_id", widget: "number", required: false }
+      - { label: "Overview", name: "overview", widget: "text", required: false }
+      - { label: "Poster", name: "poster_path", widget: "string", required: false }
+      - { label: "Release Date", name: "release_date", widget: "datetime", required: false }
+      - { label: "Showtimes", name: "showtimes", widget: "list", required: false }
+` : ''}
 `;
 
 exports.handler = async function(event, context) {

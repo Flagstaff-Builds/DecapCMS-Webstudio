@@ -8,7 +8,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["gray-matter", "@netlify/functions"]
+  external_node_modules = ["gray-matter", "@netlify/functions", "node-fetch"]
   included_files = ["content/**"]
 
 # Netlify Identity is handled automatically by Netlify
@@ -63,6 +63,24 @@
 [[redirects]]
   from = "/api/debug"
   to = "/.netlify/functions/debug"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/movies"
+  to = "/.netlify/functions/movies"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/movie"
+  to = "/.netlify/functions/movie"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/tmdb"
+  to = "/.netlify/functions/tmdb-search"
   status = 200
   force = true
 

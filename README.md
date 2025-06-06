@@ -102,6 +102,8 @@ CONTENT_FOLDER=content/blog
 # CMS configuration
 # Options: 'editorial_workflow', 'simple', or leave empty (defaults to 'simple')
 PUBLISH_MODE=simple
+# Enable the optional movie collection
+COLLECTION_MOVIE=true
 ```
 
 ### Set Up Authentication
@@ -144,6 +146,8 @@ This template is designed to support multiple customers with isolated content wh
 3. Configure Netlify to deploy from your customer branch
 4. Customize the sample content or start fresh
 5. All your content changes are isolated to your branch
+
+You can enable optional collections on a per-branch basis by setting environment variables. For example, set `COLLECTION_MOVIE=true` on branches where you want the movie collection available.
 
 ### Syncing Template Updates
 When updates are available in the original template:

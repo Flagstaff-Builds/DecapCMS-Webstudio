@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const fetch = require('node-fetch');
 require('dotenv').config();
 
 const app = express();
@@ -137,7 +138,21 @@ collections:
       - { label: "Image URL", name: "image_url", widget: "image", required: false }
       - { label: "Website", name: "website", widget: "string", required: false }
       - { label: "Twitter", name: "twitter", widget: "string", required: false }
-      - { label: "Bio", name: "bio", widget: "text", required: false }`;
+      - { label: "Bio", name: "bio", widget: "text", required: false }
+${process.env.COLLECTION_MOVIE === 'true' ? `
+  - name: "movies"
+    label: "Movies"
+    folder: "content/movies"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string" }
+      - { label: "TMDB ID", name: "tmdb_id", widget: "number", required: false }
+      - { label: "Overview", name: "overview", widget: "text", required: false }
+      - { label: "Poster", name: "poster_path", widget: "string", required: false }
+      - { label: "Release Date", name: "release_date", widget: "datetime", required: false }
+      - { label: "Showtimes", name: "showtimes", widget: "list", required: false }` : ''}`;
       
       // Serve the processed content
       res.setHeader('Content-Type', 'text/yaml');
@@ -272,6 +287,67 @@ app.get('/api/posts', (req, res) => {
   } catch (error) {
     console.error('Error fetching posts:', error);
     res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
+
+// API endpoint for movies
+app.get('/api/movies', (req, res) => {
+  try {
+    const moviesPath = path.join(__dirname, 'public', 'api', 'movies.json');
+    if (!fs.existsSync(moviesPath)) {
+      return res.status(404).json({ error: 'Movies data not found. Please run the build process first.' });
+    }
+    const allMovies = JSON.parse(fs.readFileSync(moviesPath, 'utf8'));
+    res.json(allMovies);
+  } catch (error) {
+    console.error('Error fetching movies:', error);
+    res.status(500).json({ error: 'Failed to fetch movies' });
+  }
+});
+
+// API endpoint for a single movie
+app.get('/api/movie', (req, res) => {
+  try {
+    const slug = req.query.slug;
+    if (!slug) {
+      return res.status(400).json({ error: 'Missing slug' });
+    }
+    const moviePath = path.join(__dirname, 'content', 'movies', `${slug}.md`);
+    if (!fs.existsSync(moviePath)) {
+      return res.status(404).json({ error: 'Movie not found' });
+    }
+    const file = fs.readFileSync(moviePath, 'utf8');
+    const { data } = matter(file);
+    res.json({ slug, ...data });
+  } catch (error) {
+    console.error('Error fetching movie:', error);
+    res.status(500).json({ error: 'Failed to fetch movie' });
+  }
+});
+
+// Proxy to TMDB API for searching movies
+app.get('/api/tmdb', async (req, res) => {
+  const apiKey = process.env.TMDB_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'TMDB_API_KEY not set' });
+  }
+  const query = req.query.query;
+  const id = req.query.id;
+  try {
+    let url;
+    if (id) {
+      url = `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}`;
+    } else if (query) {
+      url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`;
+    } else {
+      return res.status(400).json({ error: 'Missing query or id' });
+    }
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('TMDB error:', error);
+    res.status(500).json({ error: 'Failed to fetch from TMDB' });
   }
 });
 

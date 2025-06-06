@@ -7,7 +7,7 @@ const matter = require('gray-matter');
 const CONTENT_DIR = '/var/task/content';
 
 // Site URL for generating absolute paths
-const SITE_URL = process.env.URL || 'https://decapcms-webstudio.netlify.app';
+const SITE_URL = process.env.URL || process.env.SITE_URL || 'https://decapcms-webstudio.netlify.app';
 
 // Function to process image paths to absolute URLs
 function processImagePath(imgPath) {

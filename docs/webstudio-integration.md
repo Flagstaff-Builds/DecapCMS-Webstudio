@@ -361,3 +361,6 @@ This template generates JSON files that serve as API endpoints for your content:
 - `/categories/index.json` - List of all categories
 - `/tags/index.json` - List of all tags
 - `/authors/index.json` - List of all authors
+- `/movies.json` - List of movies (if `COLLECTION_MOVIE` is enabled)
+- `/api/movies` - API endpoint for movies
+- `/api/movie?slug=your-movie` - Single movie details

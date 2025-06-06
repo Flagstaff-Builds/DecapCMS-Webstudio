@@ -18,6 +18,27 @@ function processConfig(filePath) {
     .replace(/\${CONTENT_FOLDER}/g, process.env.CONTENT_FOLDER || 'content/blog')
     .replace(/\${SITE_URL}/g, process.env.SITE_URL || 'http://localhost:3000')
     .replace(/\${PUBLISH_MODE}/g, process.env.PUBLISH_MODE || 'simple');
+
+  // Inject or remove the movie collection based on environment variable
+  const movieSnippet = `  - name: "movies"
+    label: "Movies"
+    folder: "content/movies"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string" }
+      - { label: "TMDB ID", name: "tmdb_id", widget: "number", required: false }
+      - { label: "Overview", name: "overview", widget: "text", required: false }
+      - { label: "Poster", name: "poster_path", widget: "string", required: false }
+      - { label: "Release Date", name: "release_date", widget: "datetime", required: false }
+      - { label: "Showtimes", name: "showtimes", widget: "list", required: false }`;
+
+  if (process.env.COLLECTION_MOVIE === 'true') {
+    content = content.replace('# MOVIE_COLLECTION_PLACEHOLDER', movieSnippet);
+  } else {
+    content = content.replace('# MOVIE_COLLECTION_PLACEHOLDER', '');
+  }
   
   // Add Git Gateway URLs if configured
   if (process.env.GIT_GATEWAY_URL) {
