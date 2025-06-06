@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const matter = require('gray-matter');
 const marked = require('marked');
 require('dotenv').config();
@@ -468,7 +469,8 @@ Enjoy blogging!
   
   // Run the build again to process the sample content
   console.log('Re-running build to process sample content...');
-  require('./build.js');
+  // Spawn a new Node process to rerun this script because require() is cached
+  spawnSync('node', [__filename], { stdio: 'inherit' });
   return;
 }
 
