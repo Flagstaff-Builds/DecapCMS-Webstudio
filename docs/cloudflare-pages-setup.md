@@ -136,35 +136,69 @@ Simply click **Save** to proceed with the default settings.
 
 ## Authentication Setup
 
-Since Cloudflare Pages doesn't support Netlify Identity, you have several options:
+### Single Sign-On with Cloudflare Access (Recommended)
 
-### Option 1: Git Gateway with Personal Access Token
+This setup provides a seamless experience - users authenticate once with Cloudflare Access and they're in. No second login screen!
 
-1. Create a GitHub Personal Access Token with repo permissions
-2. Configure Git Gateway in your DecapCMS config
-3. Users authenticate via Cloudflare Access, then use the CMS
+#### How It Works
 
-### Option 2: GitHub Backend
+1. User visits `/admin/cms/`
+2. Cloudflare Access prompts for authentication (email, Google, etc.)
+3. Once authenticated, they access the CMS directly - **no second login**
 
-Modify the CMS configuration to use GitHub backend directly:
+#### Setting Up Single Sign-On
 
-```yaml
-backend:
-  name: github
-  repo: your-username/your-repo
-  branch: main
-```
+1. **Deploy the Git Gateway Worker**
 
-### Option 3: GitLab Backend
+   Deploy the provided `workers/simple-git-gateway.js` as a Cloudflare Worker:
+   
+   ```bash
+   # In your Cloudflare dashboard:
+   1. Go to Workers & Pages > Create > Create Worker
+   2. Name it (e.g., "cms-git-gateway")
+   3. Paste the worker code from workers/simple-git-gateway.js
+   4. Add environment variables:
+      - GITHUB_TOKEN: Your GitHub personal access token
+      - GITHUB_REPO: "owner/repo" format
+   5. Deploy the worker
+   ```
 
-If using GitLab:
+2. **Update Your Environment Variables**
 
-```yaml
-backend:
-  name: gitlab
-  repo: your-username/your-repo
-  branch: main
-```
+   Add to your Cloudflare Pages environment variables:
+   ```env
+   CMS_BACKEND=git-gateway
+   GIT_GATEWAY_URL=https://your-worker.workers.dev
+   ```
+
+3. **Configure the CMS**
+
+   The config.yml will use these environment variables:
+   ```yaml
+   backend:
+     name: git-gateway
+     branch: ${GITHUB_BRANCH}
+     identity_url: ${GIT_GATEWAY_URL}
+     gateway_url: ${GIT_GATEWAY_URL}
+   ```
+
+This creates a truly seamless experience where Cloudflare Access is the only authentication layer.
+
+### Alternative: Netlify for Authentication Only
+
+If you prefer not to deploy a worker, you can still use Netlify purely as an authentication provider while hosting on Cloudflare Pages. This will show a second login screen but requires no custom code.
+
+### Environment Variables for Config
+
+The config files use environment variables that are processed during build:
+
+- `${GITHUB_BRANCH}` - The branch to edit
+- `${SITE_URL}` - Your site's URL
+- `${MEDIA_FOLDER}` - Where to store media files
+- `${PUBLIC_FOLDER}` - Public path for media
+- `${PUBLISH_MODE}` - Publishing workflow mode
+
+These are automatically replaced during the build process by the `prebuild` script.
 
 ## Embedding the CMS
 
@@ -277,6 +311,38 @@ For iframe embedding problems:
 - Serverless functions (use Workers on Cloudflare)
 - Environment variable names (some differences)
 
+## Recommended Setup for Customer Sites
+
+For the best customer experience with single sign-on:
+
+1. **Deploy the Git Gateway Worker** (one-time setup)
+   - Copy `workers/simple-git-gateway.js` to a new Cloudflare Worker
+   - Add your GitHub token and repo as environment variables
+   - Deploy the worker
+
+2. **Configure Cloudflare Pages** with these environment variables:
+   ```env
+   GITHUB_BRANCH=main
+   SITE_URL=https://your-site.pages.dev
+   GIT_GATEWAY_URL=https://your-worker.workers.dev
+   MEDIA_FOLDER=images/uploads
+   PUBLIC_FOLDER=/images/uploads
+   CONTENT_FOLDER=content/blog
+   PUBLISH_MODE=simple
+   ```
+
+3. **Set up Cloudflare Access**
+   - Protect `/admin/*` path
+   - Use email-based authentication
+   - Add your customers' emails to the access list
+
+This gives you:
+- ✅ **Single sign-on** - One login via Cloudflare Access
+- ✅ **No GitHub accounts needed** - Customers use their email
+- ✅ **Fast global CDN** - Cloudflare's network
+- ✅ **Secure** - Zero Trust protection
+- ✅ **Simple** - No complex identity providers
+
 ## Best Practices
 
 1. **Test locally first**: Use `npm run dev` to test changes
@@ -284,6 +350,7 @@ For iframe embedding problems:
 3. **Monitor build times**: Optimize if builds take too long
 4. **Cache static assets**: Configure appropriate cache headers
 5. **Regular backups**: Keep your content backed up in Git
+6. **Dual-platform compatibility**: Always test changes on both Netlify and Cloudflare Pages
 
 ## Next Steps
 

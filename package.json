@@ -4,6 +4,7 @@
   "description": "Simple blog with Decap CMS for Webstudio",
   "main": "build.js",
   "scripts": {
+    "prebuild": "node scripts/build-config.js",
     "build": "node build.js && node build-posts.js",
     "build:posts": "node build-posts.js",
     "start": "node server.js",
