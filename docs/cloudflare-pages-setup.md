@@ -47,7 +47,6 @@ Use these build settings for Cloudflare Pages:
 
 - **Build command**: `npm run build`
 - **Build output directory**: `public`
-- **Node.js version**: 16 or higher
 
 ### 3. Set Environment Variables
 
@@ -82,6 +81,8 @@ To protect the `/admin/*` path with Cloudflare Access:
 
 ### 1. Enable Cloudflare Access
 
+The first time you enable zero trust, you may need to fill in credit card information even though you can select the $0/mth plan.
+
 1. In your Cloudflare dashboard, go to **Zero Trust**
 2. Navigate to **Access** → **Applications**
 3. Click **Add an application**
@@ -89,10 +90,13 @@ To protect the `/admin/*` path with Cloudflare Access:
 
 ### 2. Configure the Application
 
-- **Application name**: Blog CMS Admin
+- **Application name**: YourBlogName CMS Admin
 - **Session duration**: 24 hours (or your preference)
-- **Application domain**: `your-domain.com`
-- **Path**: `/admin/*`
+
+Add public hostname:
+
+- **Public hostname domain**: `your-domain.com` (not the Decap CMS page worker domain from Cloudflare)
+- **Public hostname path**: `/admin/*`
 
 ### 3. Set Access Policies
 
@@ -108,7 +112,7 @@ Create policies to control who can access the CMS:
 - **Action**: Allow
 - **Include**: Specific email addresses
 
-### 4. Configure Authentication Methods
+### 4. Configure Authentication Methods (Optional)
 
 Choose your preferred authentication methods:
 - Google
@@ -138,7 +142,7 @@ Simply click **Save** to proceed with the default settings.
 
 ### Single Sign-On with Cloudflare Access (Recommended)
 
-This setup provides a seamless experience - users authenticate once with Cloudflare Access and they're in. No second login screen!
+This setup provides a seamless experience - users authenticate once with Cloudflare Access and they're in. No second login screen.
 
 #### How It Works
 
@@ -158,10 +162,33 @@ This setup provides a seamless experience - users authenticate once with Cloudfl
    2. Name it (e.g., "cms-git-gateway")
    3. Paste the worker code from workers/simple-git-gateway.js
    4. Add environment variables:
-      - GITHUB_TOKEN: Your GitHub personal access token
+      - GITHUB_TOKEN: Your GitHub personal access token (see below for required permissions)
       - GITHUB_REPO: "owner/repo" format
    5. Deploy the worker
    ```
+
+   **GitHub Personal Access Token Permissions**
+   
+   Create a GitHub Personal Access Token with these specific permissions:
+   
+   For **Classic Personal Access Token**:
+   - ✅ **repo** (Full control of private repositories)
+     - Includes: repo:status, repo_deployment, public_repo, repo:invite
+
+   For **Fine-grained Personal Access Token** (recommended):
+   - **Repository permissions** for your specific repository:
+     - ✅ **Contents**: Read and Write (for reading/writing blog posts and media)
+     - ✅ **Metadata**: Read (always required)
+     - ✅ **Pull requests**: Read (if using editorial workflow)
+     - ✅ **Actions**: Read (optional, for workflow status)
+   
+   To create the token:
+   1. Go to GitHub Settings > Developer settings > Personal access tokens
+   2. Choose "Fine-grained personal access tokens" for better security
+   3. Set expiration (recommend 90 days with rotation)
+   4. Select your specific repository
+   5. Grant the permissions listed above
+   6. Generate and save the token securely
 
 2. **Update Your Environment Variables**
 
@@ -317,7 +344,7 @@ For the best customer experience with single sign-on:
 
 1. **Deploy the Git Gateway Worker** (one-time setup)
    - Copy `workers/simple-git-gateway.js` to a new Cloudflare Worker
-   - Add your GitHub token and repo as environment variables
+   - Add your GitHub token (with permissions detailed above) and repo as environment variables
    - Deploy the worker
 
 2. **Configure Cloudflare Pages** with these environment variables:
