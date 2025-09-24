@@ -6,7 +6,7 @@
  * 
  * Deploy this as a Cloudflare Worker and set these environment variables:
  * - GITHUB_TOKEN: Personal access token with repo permissions
- * - GITHUB_REPO: owner/repo format (e.g., "Flagstaff-Builds/DecapCMS-Webstudio")
+ * - GITHUB_REPO: owner/repo format (e.g., "YourGitHubUsername/DecapCMS-Webstudio")
  */
 
 export default {
