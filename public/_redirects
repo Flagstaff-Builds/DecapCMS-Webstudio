@@ -11,9 +11,11 @@
 
 # API endpoints - Cloudflare doesn't support functions like Netlify
 # These will need to be handled by Cloudflare Workers or served as static files
-/api/posts /api/posts.json 200
-/api/post /api/posts.json 200
-/api/debug /api/debug.json 200
+# NOTE: These are commented out when using Netlify Functions : NEED TO FIX
+# Uncomment for Cloudflare Pages deployment
+# /api/posts /api/posts.json 200
+# /api/post /api/posts.json 200
+# /api/debug /api/debug.json 200
 
 # Blog pages
 /blog/* /blog/:splat 200
