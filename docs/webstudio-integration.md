@@ -99,7 +99,7 @@ window.addEventListener('message', function(event) {
 1. In Webstudio, create a new page with a dynamic route parameter (e.g., `/blog/[slug]`)
 2. Add a Data Variable to fetch a single blog post:
    - Name it `blogPost`
-   - Set the URL to `/api/post?slug=${system.params.slug}`
+   - Set the URL to `https://YOUR-NETLIFY-SITE.netlify.app/api/post?slug=${system.params.slug}`
    - This will fetch a single post based on the slug in the URL
 
 3. Display the post content:
@@ -111,8 +111,6 @@ window.addEventListener('message', function(event) {
      - Author image: `${blogPost.author.profile_image}`
      - Author bio: `${blogPost.author.bio}`
    - For the published date: `${blogPost.published_at}`
-
-> **Note**: If you're using the `/api/posts` endpoint with a slug parameter instead, the URL would be `/api/posts?slug=${system.params.slug}`
 
 ### Add Previous/Next Post Navigation
 
@@ -255,13 +253,9 @@ GET /api/posts?page=1&limit=10
 
 ### Get Single Post
 ```
-GET /blog/post-slug.json
-```
-
-Or using the API endpoint:
-```
 GET /api/post?slug=post-slug
 ```
+This endpoint returns a single post with navigation data for previous and next posts.
 
 **Example Response:**
 ```json
