@@ -252,9 +252,11 @@ GET /api/posts?page=1&limit=10
 ```
 
 ### Get Single Post
+
 ```
 GET /api/post?slug=post-slug
 ```
+
 This endpoint returns a single post with navigation data for previous and next posts.
 
 **Example Response:**
