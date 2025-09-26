@@ -6,7 +6,7 @@ feature_image:
   alt: A winding path through colorful autumn trees representing personal growth
   width: 1536
   height: 1024
-  url: /images/path-through-autumn-trees.jpg
+  url: /images/path.png
 html_content: >-
   Back in May, I shared how I was beginning training with <strong>Togetherall</strong>, a peer-to-peer mental health support platform. It felt like opening a new door — one that invited learning, reflection, and the chance to contribute to a community built on care.
 

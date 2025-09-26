@@ -6,7 +6,7 @@ feature_image:
   alt: A single candle glowing in a farmhouse window, symbolizing hope in darkness
   width: 1536
   height: 1024
-  url: /images/candlelight-in-window.jpg
+  url: /images/stories.png
 html_content: >-
   <strong>Sharing stories is so important.</strong> It may even save a life.
 

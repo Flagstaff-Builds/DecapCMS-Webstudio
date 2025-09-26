@@ -6,7 +6,7 @@ feature_image:
   alt: A hearty lunch spread on a truck tailgate in a golden harvest field
   width: 1536
   height: 1024
-  url: /images/harvest-lunch-in-field.jpg
+  url: /images/field.png
 html_content: >-
   Harvest is a season that tests both endurance and spirit. The hours are long, the work demanding, and sometimes the smallest kindness can carry you further than you thought possible.
 

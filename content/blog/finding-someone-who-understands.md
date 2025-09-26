@@ -3,10 +3,10 @@ title: Finding Someone Who Understands
 slug: finding-someone-who-understands
 excerpt: Support doesn't always have to come from those closest to us. Sometimes strength comes from being heard by someone who has walked a similar path.
 feature_image:
-  alt: An open gate in a peaceful field representing new opportunities for connection
+  alt: An open gate in a peaceful field representing new opportunities for connectionunde
   width: 1536
   height: 1024
-  url: /images/open-gate-in-field.jpg
+  url: /images/understands.png
 html_content: >-
   There are times in life when carrying something alone becomes too heavy. Secrets, worries, unspoken struggles — they can eat away at us in silence.
 

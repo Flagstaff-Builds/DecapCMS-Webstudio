@@ -6,7 +6,7 @@ feature_image:
   alt: Handwritten letters scattered on a weathered wooden table
   width: 1536
   height: 1024
-  url: /images/letters-on-wooden-table.jpg
+  url: /images/friends.png
 html_content: >-
   Yesterday was a day that filled my heart. It was one I had circled on the calendar and carried with anticipation. The reason was simple: the <strong>Secret Pal Pizza Party</strong> at our local Paintearth Lodge.
 
