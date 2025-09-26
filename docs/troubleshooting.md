@@ -49,7 +49,7 @@ To test your site locally:
 2. Install dependencies: `npm install`
 3. Create a `.env` file with your environment variables
 4. Run the local server: `npm run dev`
-5. Access the admin at: `http://localhost:8080/admin/`
+5. Access the admin at: `http://localhost:3000/admin/`
 
 ### Manual Rebuilds
 

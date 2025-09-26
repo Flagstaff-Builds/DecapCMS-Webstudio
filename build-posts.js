@@ -3,7 +3,8 @@ const path = require('path');
 const matter = require('gray-matter');
 
 // Site URL for generating absolute paths
-const SITE_URL = 'https://decapcms-webstudio.netlify.app';
+// Allow override via environment variable for flexibility
+const SITE_URL = process.env.SITE_URL || 'https://decapcms-webstudio.netlify.app';
 
 function processImagePath(imgPath) {
   if (!imgPath) return imgPath;
@@ -86,7 +87,10 @@ function getAllPosts() {
 }
 
 // Export the function for the Netlify function to use
-module.exports = { getPosts: getAllPosts };
+module.exports = {
+  getPosts: getAllPosts,
+  processImagePath,
+};
 
 // If run directly, generate the posts.json file
 if (require.main === module) {
