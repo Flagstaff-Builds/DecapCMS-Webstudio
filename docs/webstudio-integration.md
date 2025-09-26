@@ -2,13 +2,24 @@
 
 This guide explains how to connect your Decap CMS blog to a Webstudio site.
 
+## Quick Start
+
+This CMS provides both **dynamic API endpoints** (recommended) and **static JSON files** for accessing your content:
+
+- **Recommended:** Use `/api/posts` and `/api/post` for dynamic, real-time data
+- **Alternative:** Use `/blog/*.json` files for static, build-time data
+
+The API endpoints have been updated to work reliably on Netlify deployments.
+
 ## Table of Contents
 - [Embedding the CMS Editor](#embedding-the-cms-editor)
 - [Setting Up Resources in Webstudio](#setting-up-resources-in-webstudio)
-- [Create a Listing Page](#create-a-listing-page)
-- [Create a Dynamic Post Page](#create-a-dynamic-post-page)
+- [Display a List of Posts (Recommended)](#display-a-list-of-posts-recommended)
+- [Create a Dynamic Post Page (Recommended)](#create-a-dynamic-post-page-recommended)
+- [Add Previous/Next Post Navigation](#add-previousnext-post-navigation)
 - [Implement Pagination](#implement-pagination)
 - [Display Limited Posts](#display-limited-posts)
+- [API Endpoints Reference](#api-endpoints-reference)
 
 ## Embedding the CMS Editor
 
@@ -54,81 +65,90 @@ window.addEventListener('message', function(event) {
 
 ## Setting Up Resources in Webstudio
 
-### Create a Listing Page
+### Available API Endpoints
 
-1. In Webstudio, create a new page for your blog list (e.g., `/blog`)
-2. Add a Resource variable to fetch all blog posts:
-   - URL: `https://YOUR-NETLIFY-SITE.netlify.app/blog/index.json`
-   - This will return an array of all your blog posts
+This CMS provides two types of endpoints:
 
-### Display a List of Posts
+1. **Dynamic API Endpoints** (Recommended - serverless functions that always return fresh data):
+   - `/api/posts` - Get paginated list of posts
+   - `/api/post` - Get individual post by slug
 
-1. In Webstudio, add a "**Data Variable**" to the body of your page
-   - Name it whatever you want eg `blogPosts`
+2. **Static JSON Files** (Generated at build time):
+   - `/blog/index.json` - All posts (full content)
+   - `/blog/posts.json` - All posts (metadata only)
+   - `/blog/index-[N].json` - Limited posts (e.g., index-3.json for 3 most recent)
+   - `/blog/[slug].json` - Individual post by slug
+   - `/categories/index.json` - All categories
+   - `/tags/index.json` - All tags
+   - `/authors/index.json` - All authors
+
+### Display a List of Posts (Recommended)
+
+1. In Webstudio, add a "**Data Variable**" to your page:
+   - Name it `blogPosts`
    - Select "**Resource**" as the data type
-   - Set the "URL" to `https://YOUR-NETLIFY-SITE.netlify.app/blog/index.json`
+   - Set the "URL" to `https://YOUR-NETLIFY-SITE.netlify.app/api/posts?limit=10`
    - Set the "Request Method" to "**GET**"
 
-   Example cURL command:
-   ```bash
-   curl "YOUR-NETLIFY-SITE.netlify.app/blog/index.json" \
-   --request get
-   ```
-2. Add a "**Collection**" component to your page
-   - Bind the "**Data**" to your resource variable: `blogPosts.data.posts`
-3. Inside the "**Collection**" component, add elements to display blog post information:
-   - Add a Heading and bind its "**Text Content**" to `blog.title`
-   - Add a Text component and bind its "**Text Content**" to `blog.excerpt`
-   - Add an Image component and configure it with feature image properties:
-     - **Source**: `blog.feature_image.url`
-     - **Alt Text**: `blog.feature_image.alt`
-     - **Title**: `blog.feature_image.title`
-     - You can also use `blog.feature_image.width` and `blog.feature_image.height` if available
-   - Etc...
-4. Access related data with:
-   - `blog.category.name` for category name
-   - `blog.tags` (array of tag objects with properties like `name`)
-   - `blog.author` (author object with properties like `name`, `image_url`, etc.)
+2. Add a "**Collection**" component to your page:
+   - Bind the "**Data**" to: `blogPosts.posts`
+
+3. Inside the "**Collection**" component, add elements to display each post:
+   - **Title**: Bind to `blog.title`
+   - **Excerpt**: Bind to `blog.excerpt`
+   - **Feature Image** (if using):
+     - Source: `blog.feature_image.url`
+     - Alt Text: `blog.feature_image.alt`
+     - Title: `blog.feature_image.title`
+   - **Category**: `blog.category.name`
+   - **Tags**: `blog.tags` (array - use collection to display)
+   - **Author**: `blog.author.name`
+   - **Author Image**: `blog.author.image_url`
 
 
 ---
 
 
-### Create a Dynamic Post Page
+### Create a Dynamic Post Page (Recommended)
 
 1. In Webstudio, create a new page with a dynamic route parameter (e.g., `/blog/[slug]`)
+
 2. Add a Data Variable to fetch a single blog post:
    - Name it `blogPost`
+   - Select "**Resource**" as the data type
    - Set the URL to `https://YOUR-NETLIFY-SITE.netlify.app/api/post?slug=${system.params.slug}`
-   - This will fetch a single post based on the slug in the URL
+   - Set the "Request Method" to "**GET**"
 
 3. Display the post content:
-   - Add a Heading for the title: `${blogPost.title}`
-   - Add an Image for the feature image: `${blogPost.feature_image.url}`
-   - For the post content, use: `${blogPost.html_content}`
-   - For the author section:
-     - Author name: `${blogPost.author.name}`
-     - Author image: `${blogPost.author.profile_image}`
-     - Author bio: `${blogPost.author.bio}`
-   - For the published date: `${blogPost.published_at}`
+   - **Title**: `blogPost.title`
+   - **Feature Image**: `blogPost.feature_image.url`
+   - **Content (HTML)**: `blogPost.html_content`
+   - **Content (Markdown)**: `blogPost.markdown_content` (if you need raw markdown)
+   - **Author Info**:
+     - Name: `blogPost.author.name`
+     - Image: `blogPost.author.image_url`
+     - Bio: `blogPost.author.bio`
+   - **Published Date**: `blogPost.published_at`
+   - **Category**: `blogPost.category.name`
+   - **Tags**: `blogPost.tags` (array)
 
 ### Add Previous/Next Post Navigation
 
-The individual post endpoint now includes navigation data for previous and next posts. Here's how to implement post navigation in Webstudio:
+The `/api/post` endpoint includes navigation data for previous and next posts. Here's how to implement post navigation in Webstudio:
 
 1. **Add Navigation Links:**
-   - For the Previous Post link:
-     - Set visibility condition to: `${blogPost.navigation.previous ? true : false}`
+   - For the Previous Post link (newer post):
+     - Set visibility condition to: `blogPost.navigation.previous`
      - Set the href to: `/blog/${blogPost.navigation.previous.slug}`
      - Display the title: `${blogPost.navigation.previous.title}`
-   
-   - For the Next Post link:
-     - Set visibility condition: `${blogPost.navigation.next ? true : false}`
+
+   - For the Next Post link (older post):
+     - Set visibility condition to: `blogPost.navigation.next`
      - Set the href to: `/blog/${blogPost.navigation.next.slug}`
      - Display the title: `${blogPost.navigation.next.title}`
 
 2. **Navigation Data Structure:**
-   The post endpoint returns navigation data in this format:
+   The API endpoint returns navigation data in this format:
    ```json
    {
      "navigation": {
@@ -153,26 +173,26 @@ To implement pagination for your blog listing page:
 
 1. Set up the Data Variable for your blog posts with pagination parameters:
    - Name it `blogPosts`
-   - Set the URL to `/api/posts?limit=${postsPerPage}${system.search.page ? `&page=${system.search.page}` : ''}`
+   - Set the URL to `https://YOUR-NETLIFY-SITE.netlify.app/api/posts?limit=${postsPerPage}${system.search.page ? `&page=${system.search.page}` : ''}`
    - Create a separate variable `postsPerPage` with a numeric value (e.g., `10`)
 
 2. Add Pagination Controls:
    - Create a navigation element with "Previous" and "Next" buttons
    - For the Previous button:
-     - Set its visibility condition to: `blogPosts.data.pagination.hasPrevPage ? true : false`
-     - Set its href to: `?page=${blogPosts.data.pagination.currentPage - 1}`
+     - Set its visibility condition to: `blogPosts.pagination.hasPrevPage`
+     - Set its href to: `?page=${blogPosts.pagination.currentPage - 1}`
    - For the Next button:
-     - Set its visibility condition to: `blogPosts.data.pagination.hasNextPage ? true : false`
-     - Set its href to: `?page=${blogPosts.data.pagination.currentPage + 1}`
+     - Set its visibility condition to: `blogPosts.pagination.hasNextPage`
+     - Set its href to: `?page=${blogPosts.pagination.currentPage + 1}`
 
 3. Display Pagination Information (optional):
-   - Add text to show current page: `Page ${blogPosts.data.pagination.currentPage} of ${blogPosts.data.pagination.totalPages}`
-   - Show total posts: `${blogPosts.data.pagination.totalPosts} posts`
+   - Current page: `Page ${blogPosts.pagination.currentPage} of ${blogPosts.pagination.totalPages}`
+   - Total posts: `${blogPosts.pagination.totalPosts} posts`
 
 4. Show/Hide Pagination Controls:
    - Set the visibility of the entire pagination component to:
      ```javascript
-     ((blogPosts.data.pagination.hasNextPage) || (blogPosts.data.pagination.currentPage > 1)) ? true : false
+     blogPosts.pagination.hasNextPage || blogPosts.pagination.currentPage > 1
      ```
 
 ### Display Limited Posts
@@ -181,81 +201,31 @@ To display a limited number of posts (e.g., on your homepage):
 
 1. Create a Data Variable for a limited set of posts:
    - Name it `recentPosts`
-   - Set the URL to `/api/posts?limit=3` (replace 3 with your desired number)
+   - Set the URL to `https://YOUR-NETLIFY-SITE.netlify.app/api/posts?limit=3`
+   (replace 3 with your desired number)
 
 2. Display the limited posts:
    - Add a Collection component
-   - Bind its Data to `recentPosts.data.posts`
+   - Bind its Data to `recentPosts.posts`
    - Design your post cards as needed
 
 3. Add a "View All Posts" link to your full blog page
 
-For individual blog posts, you'll need to:
+### Alternative: Using Static JSON Files
 
-1. Create a dynamic page in Webstudio (e.g., `/blog/:slug`)
-2. Add a "**Data Variable**" to the body of your page
-   - Name it whatever you want eg `blogPost`
-   - Select "**Resource**" as the data type
-   - URL: \`https://YOUR-NETLIFY-SITE.netlify.app/blog/\${system.params.slug}.json\`
-      - You'll need the backticks in the expression editor
-   - Set the "Request Method" to "**GET**"
+If you prefer to use the static JSON files (generated at build time):
 
-3. Add content and start binding data:
-   - `blogPost.data.title` for the post title
-   - For the post's feature image (if available):
-     - `blogPost.data.feature_image.url` for the image source
-     - `blogPost.data.feature_image.alt` for the alt text
-     - `blogPost.data.feature_image.title` for the title/caption
-     - `blogPost.data.feature_image.width` and `blogPost.data.feature_image.height` for dimensions
-   - `blogPost.data.html_content` for the rendered HTML content
-   - `blogPost.data.published_at` for the publication date
-   - `blogPost.data.category.name` for the category
-   - `blogPost.data.tags` for the tags (this is an array so you'll need to use a collection to display them)
-   - `blogPost.data.author` for the post author (with properties like `name`, `image_url`, etc.)
+**For listing posts:**
+- All posts: `https://YOUR-NETLIFY-SITE.netlify.app/blog/index.json`
+- Limited posts: `https://YOUR-NETLIFY-SITE.netlify.app/blog/index-3.json` (for 3 posts)
+- Access posts array: `blogPosts.posts`
 
-## API Endpoints
+**For individual posts:**
+- URL: `https://YOUR-NETLIFY-SITE.netlify.app/blog/${system.params.slug}.json`
+- Access all fields directly: `blogPost.title`, `blogPost.html_content`, etc.
+- Navigation uses `blogPost.previous_post` and `blogPost.next_post`
 
-### Get Paginated Posts
-
-```
-GET /api/posts?page=1&limit=10
-```
-
-**Parameters:**
-- `page` (optional): Page number (default: 1)
-- `limit` (optional): Number of posts per page (default: 10)
-
-**Example Response:**
-```json
-{
-  "posts": [
-    {
-      "title": "Post Title",
-      "slug": "post-slug",
-      "excerpt": "Post excerpt...",
-      "feature_image": {
-        "url": "/images/example.jpg",
-        "alt": "Alt text",
-        "title": "Image title"
-      }
-    }
-  ],
-  "pagination": {
-    "currentPage": 1,
-    "postsPerPage": 10,
-    "totalPosts": 25,
-    "totalPages": 3,
-    "hasNextPage": true,
-    "hasPrevPage": false
-  }
-}
-```
-
-### Get Single Post
-```
-GET /api/post?slug=post-slug
-```
-This endpoint returns a single post with navigation data for previous and next posts.
+## API Endpoints Reference
 
 **Example Response:**
 ```json
@@ -300,58 +270,150 @@ This endpoint returns a single post with navigation data for previous and next p
 }
 ```
 
-### Categories
+### Dynamic API Endpoints (Recommended)
+
+#### Get Paginated Posts
+```
+GET /api/posts?page=1&limit=10
+```
+
+**Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Number of posts per page (default: 10)
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "count": 10,
+  "posts": [
+    {
+      "title": "Post Title",
+      "slug": "post-slug",
+      "excerpt": "Post excerpt...",
+      "published_at": "2024-01-01T00:00:00Z",
+      "feature_image": {
+        "url": "https://YOUR-SITE.netlify.app/images/example.jpg",
+        "alt": "Alt text",
+        "title": "Image title"
+      },
+      "category": {
+        "name": "Category Name",
+        "slug": "category-slug"
+      },
+      "tags": [
+        {"name": "Tag Name", "slug": "tag-slug"}
+      ],
+      "author": {
+        "name": "Author Name",
+        "slug": "author-slug",
+        "image_url": "https://YOUR-SITE.netlify.app/images/author.jpg",
+        "bio": "Author bio..."
+      }
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "postsPerPage": 10,
+    "totalPosts": 25,
+    "totalPages": 3,
+    "hasNextPage": true,
+    "hasPrevPage": false
+  }
+}
+```
+
+#### Get Single Post
+```
+GET /api/post?slug=post-slug
+```
+This endpoint returns a single post with navigation data for previous and next posts.
+
+### Static JSON Files
+
+#### Categories
 ```
 GET /categories/index.json
 ```
 
-### Tags
+#### Tags
 ```
 GET /tags/index.json
 ```
 
-### Authors
+#### Authors
 ```
 GET /authors/index.json
 ```
 
-## Limiting Blog Posts
+#### Blog Post Files
 
-You can limit the number of blog posts that appear in your Webstudio resource by using a numbered index file instead of the default `index.json`.
-
-The build process automatically generates the following files:
-- `index.json` - Contains all blog posts
-- `index-1.json` - Contains only the most recent post
-- `index-3.json` - Contains the 3 most recent posts
-- `index-5.json` - Contains the 5 most recent posts
-- `index-10.json` - Contains the 10 most recent posts
-
-To use a limited set of posts in your Webstudio project, simply change your resource URL to include the desired limit:
-
+**All posts:**
 ```
-https://your-site-url.netlify.app/blog/index-3.json
+https://YOUR-SITE.netlify.app/blog/index.json
+```
+Response format:
+```json
+{
+  "posts": [
+    {
+      "title": "Post Title",
+      "slug": "post-slug",
+      "excerpt": "Post excerpt...",
+      "feature_image": {
+        "url": "https://YOUR-SITE.netlify.app/images/example.jpg",
+        "alt": "Alt text"
+      },
+      "html_content": "<p>Full HTML content...</p>",
+      "markdown_content": "Full markdown content...",
+      "published_at": "2024-01-01T00:00:00Z",
+      "category": {"name": "Category", "slug": "category"},
+      "tags": [{"name": "Tag", "slug": "tag"}],
+      "authors": {"name": "Author", "slug": "author"}
+    }
+  ]
+}
 ```
 
-Each limited file includes:
-- The specified number of most recent posts
-- The total count of all posts
-- The limit that was applied
+**Limited posts (1, 3, 5, or 10):**
+```
+https://YOUR-SITE.netlify.app/blog/index-3.json
+```
 
-This is useful for displaying only the most recent posts on your homepage while still having access to all posts for archive pages.
+**Individual post:**
+```
+https://YOUR-SITE.netlify.app/blog/[slug].json
+```
+Returns single post object with `previous_post` and `next_post` for navigation.
 
 ## Advanced: Using the Markdown Content
 
 If you prefer to use your own markdown parser or need access to the raw markdown:
 
-1. Each post JSON includes both `html_content` (pre-rendered HTML) and `markdown_content` (raw markdown)
-2. You can use `blogPost.data.markdown_content` with a custom markdown parser if you need more control over the rendering
+1. Both API endpoints and static files include:
+   - `html_content` - Pre-rendered HTML (sanitized)
+   - `markdown_content` - Raw markdown content
 
-## API Endpoints
+2. You can use `blogPost.markdown_content` with a custom markdown parser if you need more control over the rendering
 
-This template generates JSON files that serve as API endpoints for your content:
+## Choosing Between Dynamic API and Static Files
 
-- `/blog/index.json` - List of all blog posts
-- `/blog/[slug].json` - Individual blog post data
-- `/categories/index.json` - List of all categories
-- `/tags/index.json` - List of all tags
-- `/authors/index.json` - List of all authors
+### Use Dynamic API Endpoints (`/api/posts`, `/api/post`) when:
+- You need real-time data that updates immediately after publishing
+- You're implementing pagination with query parameters
+- You want server-side filtering or searching
+- You need consistent data format across different queries
+
+### Use Static JSON Files (`/blog/*.json`) when:
+- You want faster load times for static content
+- Your content doesn't change frequently
+- You're building a static site that rebuilds on content changes
+- You want to reduce serverless function invocations
+
+## Troubleshooting API Endpoints
+
+If the API endpoints aren't working:
+1. The functions have been updated to work without the `@netlify/functions` builder wrapper
+2. Check Netlify's function logs for deployment errors
+3. Ensure your `netlify.toml` redirects are configured correctly
+4. Verify that the `content/` directory is being included in the function deployment
