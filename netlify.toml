@@ -1,6 +1,6 @@
 [build]
   publish = "public"
-  command = "npm install && npm run build"
+  command = "rm -rf node_modules package-lock.json && npm install && npm run build"
   functions = "netlify/functions"
 
 [build.environment]
