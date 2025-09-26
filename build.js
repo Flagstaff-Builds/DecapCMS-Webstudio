@@ -1,8 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const matter = require('gray-matter');
 const marked = require('marked');
 require('dotenv').config();
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
+const DOMPurify = createDOMPurify(new JSDOM('').window);
 
 // Get site URL from environment variables
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
@@ -169,7 +173,7 @@ const posts = blogFiles.map(filename => {
   const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
   
   // Store both markdown and HTML versions
-  const htmlContent = marked.parse(processedMarkdownContent);
+  const htmlContent = DOMPurify.sanitize(marked.parse(processedMarkdownContent));
   
   // Process relationships
   let categoryData = null;
@@ -237,11 +241,32 @@ const posts = blogFiles.map(filename => {
 // Sort posts by date (newest first)
 posts.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
 
-// Create a file with all posts
+// Create a file with all posts (full data for backward compatibility)
 fs.writeFileSync(
   path.join(blogApiDir, 'index.json'),
   JSON.stringify({ posts }, null, 2)
 );
+
+// Create a lightweight posts.json with just metadata for listing
+const postsMetadata = posts.map(post => ({
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt,
+  feature_image: post.feature_image,
+  published_at: post.published_at,
+  category: post.category,
+  tags: post.tags,
+  authors: post.authors
+}));
+
+fs.writeFileSync(
+  path.join(blogApiDir, 'posts.json'),
+  JSON.stringify({
+    posts: postsMetadata,
+    total: posts.length
+  }, null, 2)
+);
+console.log(`Created posts.json with ${postsMetadata.length} posts (metadata only)`);
 
 // Create a function to generate limited post files
 function createLimitedPostsFile(limit) {
@@ -311,11 +336,31 @@ if (fs.existsSync(path.join(blogApiDir, 'page-1.json'))) {
   );
 }
 
-// Create individual files for each post
-posts.forEach(post => {
+// Create individual files for each post with next/previous navigation
+posts.forEach((post, index) => {
+  const postWithNav = { ...post };
+
+  // Add previous post info (if exists)
+  if (index > 0) {
+    const prevPost = posts[index - 1];
+    postWithNav.previous_post = {
+      slug: prevPost.slug,
+      title: prevPost.title
+    };
+  }
+
+  // Add next post info (if exists)
+  if (index < posts.length - 1) {
+    const nextPost = posts[index + 1];
+    postWithNav.next_post = {
+      slug: nextPost.slug,
+      title: nextPost.title
+    };
+  }
+
   fs.writeFileSync(
     path.join(blogApiDir, `${post.slug}.json`),
-    JSON.stringify(post, null, 2)
+    JSON.stringify(postWithNav, null, 2)
   );
 });
 
@@ -468,7 +513,8 @@ Enjoy blogging!
   
   // Run the build again to process the sample content
   console.log('Re-running build to process sample content...');
-  require('./build.js');
+  // Spawn a new Node process to rerun this script because require() is cached
+  spawnSync('node', [__filename], { stdio: 'inherit' });
   return;
 }
 
