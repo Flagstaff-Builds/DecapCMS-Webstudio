@@ -2,9 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 const marked = require('marked');
-const { JSDOM } = require('jsdom');
-const createDOMPurify = require('dompurify');
-const DOMPurify = createDOMPurify(new JSDOM('').window);
 
 // Site URL for generating absolute paths
 // Allow override via environment variable for flexibility
@@ -91,7 +88,7 @@ function processPostData(data, content) {
   const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
 
   // Convert markdown to HTML
-  htmlContent = DOMPurify.sanitize(marked.parse(processedMarkdownContent));
+  htmlContent = marked.parse(processedMarkdownContent);
 
   return {
     ...processedData,

@@ -3,9 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 const marked = require('marked');
-const { JSDOM } = require('jsdom');
-const createDOMPurify = require('dompurify');
-const DOMPurify = createDOMPurify(new JSDOM('').window);
 
 // Content directory is at /var/task/content in the Netlify function
 // In development, use the local content directory
@@ -292,7 +289,7 @@ function getPostBySlug(slug) {
     const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
 
     // Convert markdown to HTML
-    const htmlContent = DOMPurify.sanitize(marked.parse(processedMarkdownContent));
+    const htmlContent = marked.parse(processedMarkdownContent);
     
     // Process author data
     let authorData = null;
