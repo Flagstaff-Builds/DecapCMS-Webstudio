@@ -1,0 +1,4 @@
+---
+name: Inspiration
+slug: inspiration
+---
