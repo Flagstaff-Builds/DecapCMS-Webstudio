@@ -15,6 +15,11 @@
 # /api/post /api/posts.json 200
 # /api/debug /api/debug.json 200
 
+# API endpoints - these must come BEFORE the catch-all to work
+/api/posts /.netlify/functions/posts 200
+/api/post /.netlify/functions/post 200
+/api/debug /.netlify/functions/debug 200
+
 # Blog pages
 /blog/* /blog/:splat 200
 
