@@ -1,4 +1,4 @@
-const { builder } = require('@netlify/functions');
+// const { builder } = require('@netlify/functions'); // Not needed for basic functions
 const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
@@ -439,5 +439,5 @@ const handler = async (event, context) => {
   }
 };
 
-// Export the builder-wrapped handler
-module.exports = { handler: builder(handler) };
+// Export the handler
+exports.handler = handler;
