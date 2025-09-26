@@ -2,6 +2,10 @@
 const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
+const marked = require('marked');
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
+const DOMPurify = createDOMPurify(new JSDOM('').window);
 
 // Content directory is at /var/task/content in the Netlify function
 // In development, use the local content directory
@@ -11,6 +15,22 @@ const CONTENT_DIR = process.env.NETLIFY_DEV === 'true'
 
 // Site URL for generating absolute paths
 const SITE_URL = process.env.SITE_URL || process.env.URL || 'https://decapcms-webstudio.netlify.app';
+
+// Function to convert relative image paths to absolute URLs in markdown content
+function convertRelativePathsToAbsolute(markdownContent) {
+  // Regular expression to find markdown image syntax: ![alt text](/path/to/image.jpg)
+  const imageRegex = /!\[([^\]]*)\]\((\/[^\)]+)\)/g;
+
+  // Replace relative paths with absolute URLs
+  return markdownContent.replace(imageRegex, (match, altText, relativePath) => {
+    // Ensure the site URL doesn't have a trailing slash before concatenating
+    const baseUrl = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
+    // Create the absolute URL
+    const absoluteUrl = `${baseUrl}${relativePath}`;
+    // Return the markdown image syntax with the absolute URL
+    return `![${altText}](${absoluteUrl})`;
+  });
+}
 
 // Function to process image paths to absolute URLs
 function processImagePath(imgPath) {
@@ -187,6 +207,12 @@ function getPosts() {
           // Otherwise use the content from the markdown file
           markdownContent = content;
         }
+
+        // Process relative image paths to absolute URLs
+        const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
+
+        // Convert markdown to HTML
+        const htmlContent = DOMPurify.sanitize(marked.parse(processedMarkdownContent));
         
         // Use the filename as the default slug
         const fileSlug = filename.replace(/\.(md|mdx)$/, '');
@@ -218,10 +244,12 @@ function getPosts() {
         }
         
         // Store both the filename-based slug and the frontmatter slug if it exists
-        const post = { 
-          ...frontmatter, 
+        const post = {
+          ...frontmatter,
           slug: fileSlug,
           frontmatter_slug: frontmatter.slug, // Store the frontmatter slug separately
+          content: htmlContent, // HTML content for rendering
+          html_content: htmlContent, // HTML content
           markdown_content: markdownContent, // Include raw markdown content
           // Use the properly formatted author data from the map
           author: authorData,
