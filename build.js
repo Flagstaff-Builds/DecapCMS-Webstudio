@@ -241,11 +241,32 @@ const posts = blogFiles.map(filename => {
 // Sort posts by date (newest first)
 posts.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
 
-// Create a file with all posts
+// Create a file with all posts (full data for backward compatibility)
 fs.writeFileSync(
   path.join(blogApiDir, 'index.json'),
   JSON.stringify({ posts }, null, 2)
 );
+
+// Create a lightweight posts.json with just metadata for listing
+const postsMetadata = posts.map(post => ({
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt,
+  feature_image: post.feature_image,
+  published_at: post.published_at,
+  category: post.category,
+  tags: post.tags,
+  authors: post.authors
+}));
+
+fs.writeFileSync(
+  path.join(blogApiDir, 'posts.json'),
+  JSON.stringify({
+    posts: postsMetadata,
+    total: posts.length
+  }, null, 2)
+);
+console.log(`Created posts.json with ${postsMetadata.length} posts (metadata only)`);
 
 // Create a function to generate limited post files
 function createLimitedPostsFile(limit) {
@@ -315,11 +336,31 @@ if (fs.existsSync(path.join(blogApiDir, 'page-1.json'))) {
   );
 }
 
-// Create individual files for each post
-posts.forEach(post => {
+// Create individual files for each post with next/previous navigation
+posts.forEach((post, index) => {
+  const postWithNav = { ...post };
+
+  // Add previous post info (if exists)
+  if (index > 0) {
+    const prevPost = posts[index - 1];
+    postWithNav.previous_post = {
+      slug: prevPost.slug,
+      title: prevPost.title
+    };
+  }
+
+  // Add next post info (if exists)
+  if (index < posts.length - 1) {
+    const nextPost = posts[index + 1];
+    postWithNav.next_post = {
+      slug: nextPost.slug,
+      title: nextPost.title
+    };
+  }
+
   fs.writeFileSync(
     path.join(blogApiDir, `${post.slug}.json`),
-    JSON.stringify(post, null, 2)
+    JSON.stringify(postWithNav, null, 2)
   );
 });
 
