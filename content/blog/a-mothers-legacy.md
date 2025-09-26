@@ -6,7 +6,7 @@ feature_image:
   alt: Fresh flowers on a farmhouse porch in honor of Mother's Day
   width: 1536
   height: 1024
-  url: /images/flowers.png
+  url: /images/uploads/flowers.png
 html_content: >-
   It is <strong>Mother's Day</strong>, and I can say without hesitation that my proudest title and my greatest joy has been being called "Mom."
 

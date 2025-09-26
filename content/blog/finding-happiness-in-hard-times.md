@@ -6,7 +6,7 @@ feature_image:
   alt: A bright summer sky over golden fields representing hope and renewal
   width: 1536
   height: 1024
-  url: /images/happiness.png
+  url: /images/uploads/happiness.png
 html_content: >-
   The middle of summer carries its own kind of heaviness. The days are long, the fields are hot, and sometimes even in the brightest light we can find ourselves searching for a bit of peace inside.
 

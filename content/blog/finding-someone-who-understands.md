@@ -6,7 +6,7 @@ feature_image:
   alt: An open gate in a peaceful field representing new opportunities for connectionunde
   width: 1536
   height: 1024
-  url: /images/understands.png
+  url: /images/uploads/understands.png
 html_content: >-
   There are times in life when carrying something alone becomes too heavy. Secrets, worries, unspoken struggles — they can eat away at us in silence.
 

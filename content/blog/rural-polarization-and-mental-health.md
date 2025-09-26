@@ -6,7 +6,7 @@ feature_image:
   alt: A sunrise over a rural road symbolizing hope in challenging times
   width: 1536
   height: 1024
-  url: /images/quiet-gravel-road.png
+  url: /images/uploads/quiet-gravel-road.png
 html_content: >-
   The first of May carries a kind of weight this year. It marks the start of <strong>Mental Health Awareness Month</strong>, and with it, an opportunity to bring light to a subject that too often stays in the shadows.
 

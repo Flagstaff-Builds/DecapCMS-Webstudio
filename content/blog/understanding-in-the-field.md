@@ -6,7 +6,7 @@ feature_image:
   alt: A warm light glowing from a farmhouse window at dusk
   width: 1536
   height: 1024
-  url: /images/light.png
+  url: /images/uploads/light.png
 html_content: >-
   When my husband and I reached out for help, one thing made all the difference: having an <strong>ag-informed therapist</strong>. Farming is a unique lifestyle, woven with challenges that are hard to explain even on the best of days. In times of struggle, those challenges can feel impossible to put into words for someone who has never lived them.
 
