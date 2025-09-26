@@ -4,10 +4,13 @@ const path = require('path');
 const matter = require('gray-matter');
 
 // Content directory is at /var/task/content in the Netlify function
-const CONTENT_DIR = '/var/task/content';
+// In development, use the local content directory
+const CONTENT_DIR = process.env.NETLIFY_DEV === 'true'
+  ? require('path').join(process.cwd(), 'content')
+  : '/var/task/content';
 
 // Site URL for generating absolute paths
-const SITE_URL = process.env.URL || 'https://decapcms-webstudio.netlify.app';
+const SITE_URL = process.env.SITE_URL || process.env.URL || 'https://decapcms-webstudio.netlify.app';
 
 // Function to process image paths to absolute URLs
 function processImagePath(imgPath) {
