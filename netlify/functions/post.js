@@ -10,7 +10,7 @@ const CONTENT_DIR = process.env.NETLIFY_DEV === 'true'
   : '/var/task/content';
 
 // Site URL for generating absolute paths
-const SITE_URL = process.env.URL || 'https://decapcms-webstudio.netlify.app';
+const SITE_URL = process.env.SITE_URL || process.env.URL || 'https://decapcms-webstudio.netlify.app';
 
 // Function to process image paths to absolute URLs
 function processImagePath(imgPath) {
