@@ -9,13 +9,16 @@
 # Admin general redirect (keep existing admin for backwards compatibility)
 /admin/* /admin/index.html 200
 
-# API endpoints - Cloudflare doesn't support functions like Netlify
-# These will need to be handled by Cloudflare Workers or served as static files
-# NOTE: These are commented out when using Netlify Functions
-# Uncomment for Cloudflare Pages deployment
+# API endpoints for Netlify Functions (primary deployment handled in netlify.toml)
+# For Cloudflare Pages (no functions), uncomment these static JSON fallbacks:
 # /api/posts /api/posts.json 200
 # /api/post /api/posts.json 200
 # /api/debug /api/debug.json 200
+
+# API endpoints - these must come BEFORE the catch-all to work
+/api/posts /.netlify/functions/posts 200
+/api/post /.netlify/functions/post 200
+/api/debug /.netlify/functions/debug 200
 
 # Blog pages
 /blog/* /blog/:splat 200

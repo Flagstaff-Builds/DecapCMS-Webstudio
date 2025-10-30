@@ -1,10 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
+const marked = require('marked');
 
 // Site URL for generating absolute paths
 // Allow override via environment variable for flexibility
 const SITE_URL = process.env.SITE_URL || 'https://decapcms-webstudio.netlify.app';
+
+// Function to convert relative image paths to absolute URLs in markdown content
+function convertRelativePathsToAbsolute(markdownContent) {
+  // Regular expression to find markdown image syntax: ![alt text](/path/to/image.jpg)
+  const imageRegex = /!\[([^\]]*)\]\((\/[^\)]+)\)/g;
+
+  // Replace relative paths with absolute URLs
+  return markdownContent.replace(imageRegex, (match, altText, relativePath) => {
+    // Ensure the site URL doesn't have a trailing slash before concatenating
+    const baseUrl = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
+    // Create the absolute URL
+    const absoluteUrl = `${baseUrl}${relativePath}`;
+    // Return the markdown image syntax with the absolute URL
+    return `![${altText}](${absoluteUrl})`;
+  });
+}
 
 function processImagePath(imgPath) {
   if (!imgPath) return imgPath;
@@ -37,10 +54,10 @@ function processContentImages(content) {
 
 function processPostData(data, content) {
   const processedData = { ...data };
-  
+
   // Process image fields
   const imageFields = ['image', 'cover', 'thumbnail', 'featured_image', 'feature_image'];
-  
+
   imageFields.forEach(field => {
     if (processedData[field]) {
       if (typeof processedData[field] === 'string') {
@@ -54,10 +71,30 @@ function processPostData(data, content) {
       }
     }
   });
-  
+
+  // Handle html_content field and convert to HTML
+  let markdownContent = '';
+  let htmlContent = '';
+
+  if (data.html_content) {
+    // If html_content exists in frontmatter, use that as markdown
+    markdownContent = data.html_content;
+  } else {
+    // Otherwise use the content from the markdown file
+    markdownContent = content;
+  }
+
+  // Process relative image paths to absolute URLs
+  const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
+
+  // Convert markdown to HTML
+  htmlContent = marked.parse(processedMarkdownContent);
+
   return {
     ...processedData,
-    content: processContentImages(content)
+    content: htmlContent, // HTML content for rendering
+    html_content: htmlContent, // HTML content
+    markdown_content: markdownContent // Include raw markdown content
   };
 }
 

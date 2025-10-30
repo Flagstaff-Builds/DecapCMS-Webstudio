@@ -1,7 +1,8 @@
-const { builder } = require('@netlify/functions');
+// const { builder } = require('@netlify/functions'); // Not needed for basic functions
 const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
+const marked = require('marked');
 
 // Content directory is at /var/task/content in the Netlify function
 // In development, use the local content directory
@@ -10,7 +11,23 @@ const CONTENT_DIR = process.env.NETLIFY_DEV === 'true'
   : '/var/task/content';
 
 // Site URL for generating absolute paths
-const SITE_URL = process.env.URL || 'https://decapcms-webstudio.netlify.app';
+const SITE_URL = process.env.SITE_URL || process.env.URL || 'https://decapcms-webstudio.netlify.app';
+
+// Function to convert relative image paths to absolute URLs in markdown content
+function convertRelativePathsToAbsolute(markdownContent) {
+  // Regular expression to find markdown image syntax: ![alt text](/path/to/image.jpg)
+  const imageRegex = /!\[([^\]]*)\]\((\/[^\)]+)\)/g;
+
+  // Replace relative paths with absolute URLs
+  return markdownContent.replace(imageRegex, (match, altText, relativePath) => {
+    // Ensure the site URL doesn't have a trailing slash before concatenating
+    const baseUrl = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
+    // Create the absolute URL
+    const absoluteUrl = `${baseUrl}${relativePath}`;
+    // Return the markdown image syntax with the absolute URL
+    return `![${altText}](${absoluteUrl})`;
+  });
+}
 
 // Function to process image paths to absolute URLs
 function processImagePath(imgPath) {
@@ -267,6 +284,12 @@ function getPostBySlug(slug) {
       // Otherwise use the content from the markdown file
       markdownContent = content;
     }
+
+    // Process relative image paths to absolute URLs
+    const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
+
+    // Convert markdown to HTML
+    const htmlContent = marked.parse(processedMarkdownContent);
     
     // Process author data
     let authorData = null;
@@ -298,12 +321,13 @@ function getPostBySlug(slug) {
     // Use the filename-based slug for consistency with navigation
     const fileSlug = targetFile.replace(/\.(md|mdx)$/, '');
     
-    const post = { 
-      ...frontmatter, 
+    const post = {
+      ...frontmatter,
       slug: fileSlug,  // Use filename-based slug for navigation consistency
       frontmatter_slug: frontmatter.slug,  // Keep the frontmatter slug if it exists
       url_slug: slug,  // Keep the original requested slug
-      content: markdownContent,
+      content: htmlContent, // HTML content for rendering
+      html_content: htmlContent, // HTML content
       markdown_content: markdownContent, // Include raw markdown content
       // Use the properly formatted author data from the map
       author: authorData,
@@ -484,5 +508,5 @@ const handler = async (event, context) => {
   }
 };
 
-// Export the builder-wrapped handler
-module.exports = { handler: builder(handler) };
+// Export the handler
+exports.handler = handler;
