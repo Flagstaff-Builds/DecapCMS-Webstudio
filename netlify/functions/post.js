@@ -1,0 +1,512 @@
+// const { builder } = require('@netlify/functions'); // Not needed for basic functions
+const fs = require('fs');
+const path = require('path');
+const matter = require('gray-matter');
+const marked = require('marked');
+
+// Content directory is at /var/task/content in the Netlify function
+// In development, use the local content directory
+const CONTENT_DIR = process.env.NETLIFY_DEV === 'true'
+  ? require('path').join(process.cwd(), 'content')
+  : '/var/task/content';
+
+// Site URL for generating absolute paths
+const SITE_URL = process.env.SITE_URL || process.env.URL || 'https://decapcms-webstudio.netlify.app';
+
+// Function to convert relative image paths to absolute URLs in markdown content
+function convertRelativePathsToAbsolute(markdownContent) {
+  // Regular expression to find markdown image syntax: ![alt text](/path/to/image.jpg)
+  const imageRegex = /!\[([^\]]*)\]\((\/[^\)]+)\)/g;
+
+  // Replace relative paths with absolute URLs
+  return markdownContent.replace(imageRegex, (match, altText, relativePath) => {
+    // Ensure the site URL doesn't have a trailing slash before concatenating
+    const baseUrl = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
+    // Create the absolute URL
+    const absoluteUrl = `${baseUrl}${relativePath}`;
+    // Return the markdown image syntax with the absolute URL
+    return `![${altText}](${absoluteUrl})`;
+  });
+}
+
+// Function to process image paths to absolute URLs
+function processImagePath(imgPath) {
+  if (!imgPath) return imgPath;
+  
+  // If it's already a full URL, return as is
+  if (/^https?:\/\//.test(imgPath)) {
+    return imgPath;
+  }
+  
+  // Remove any leading slashes
+  const cleanPath = imgPath.replace(/^\/+/, '');
+  
+  // If it's already in the images directory, use as is, otherwise prepend images/
+  const finalPath = cleanPath.startsWith('images/') ? cleanPath : `images/${cleanPath}`;
+  
+  return `${SITE_URL}/${finalPath}`;
+}
+
+// Function to load all authors
+function loadAuthors() {
+  try {
+    const authorsDir = path.join(CONTENT_DIR, 'authors');
+    
+    if (!fs.existsSync(authorsDir)) {
+      console.error('Authors directory does not exist:', authorsDir);
+      return {};
+    }
+    
+    const authorFiles = fs.readdirSync(authorsDir);
+    const authorMap = {};
+    
+    for (const filename of authorFiles) {
+      if (!filename.endsWith('.md')) {
+        continue;
+      }
+      
+      const filePath = path.join(authorsDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data } = matter(fileContent);
+      
+      const slug = data.slug || filename.replace('.md', '');
+      
+      // Process author data with proper image URL
+      authorMap[slug] = {
+        name: data.name,
+        slug: slug,
+        image_url: processImagePath(data.image_url),
+        bio: data.bio || null,
+        url: data.url || null
+      };
+    }
+    
+    return authorMap;
+  } catch (error) {
+    console.error('Error loading authors:', error);
+    return {};
+  }
+}
+
+// Function to load all categories
+function loadCategories() {
+  try {
+    const categoriesDir = path.join(CONTENT_DIR, 'categories');
+    
+    if (!fs.existsSync(categoriesDir)) {
+      console.error('Categories directory does not exist:', categoriesDir);
+      return {};
+    }
+    
+    const categoryFiles = fs.readdirSync(categoriesDir);
+    const categoryMap = {};
+    
+    for (const filename of categoryFiles) {
+      if (!filename.endsWith('.md')) {
+        continue;
+      }
+      
+      const filePath = path.join(categoriesDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data } = matter(fileContent);
+      
+      const slug = data.slug || filename.replace('.md', '');
+      
+      categoryMap[slug] = {
+        name: data.name,
+        slug: slug
+      };
+    }
+    
+    return categoryMap;
+  } catch (error) {
+    console.error('Error loading categories:', error);
+    return {};
+  }
+}
+
+// Function to load all tags
+function loadTags() {
+  try {
+    const tagsDir = path.join(CONTENT_DIR, 'tags');
+    
+    if (!fs.existsSync(tagsDir)) {
+      console.error('Tags directory does not exist:', tagsDir);
+      return {};
+    }
+    
+    const tagFiles = fs.readdirSync(tagsDir);
+    const tagMap = {};
+    
+    for (const filename of tagFiles) {
+      if (!filename.endsWith('.md')) {
+        continue;
+      }
+      
+      const filePath = path.join(tagsDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data } = matter(fileContent);
+      
+      const slug = data.slug || filename.replace('.md', '');
+      
+      tagMap[slug] = {
+        name: data.name,
+        slug: slug
+      };
+    }
+    
+    return tagMap;
+  } catch (error) {
+    console.error('Error loading tags:', error);
+    return {};
+  }
+}
+
+// Function to get all posts for navigation
+function getAllPostsForNavigation() {
+  try {
+    const postsDir = path.join(CONTENT_DIR, 'blog');
+    
+    if (!fs.existsSync(postsDir)) {
+      return [];
+    }
+    
+    const postFiles = fs.readdirSync(postsDir);
+    const posts = [];
+    
+    for (const filename of postFiles) {
+      if (!filename.endsWith('.md') && !filename.endsWith('.mdx')) {
+        continue;
+      }
+      
+      const filePath = path.join(postsDir, filename);
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const { data: frontmatter } = matter(fileContent);
+      
+      // Skip drafts unless we're in development
+      if (frontmatter.draft && process.env.CONTEXT !== 'development') {
+        continue;
+      }
+      
+      // Use filename-based slug as the primary slug (to match how posts are looked up)
+      const fileSlug = filename.replace(/\.(md|mdx)$/, '');
+      
+      posts.push({
+        slug: fileSlug,  // Use filename-based slug to match getPostBySlug behavior
+        frontmatter_slug: frontmatter.slug,  // Store frontmatter slug separately if needed
+        title: frontmatter.title,
+        published_at: frontmatter.published_at || frontmatter.date || new Date().toISOString()
+      });
+    }
+    
+    // Sort posts by published_at date (newest first)
+    posts.sort((a, b) => {
+      const dateA = new Date(a.published_at);
+      const dateB = new Date(b.published_at);
+      return dateB - dateA;
+    });
+    
+    return posts;
+  } catch (error) {
+    console.error('Error getting all posts for navigation:', error);
+    return [];
+  }
+}
+
+// Function to get a single post by slug
+function getPostBySlug(slug) {
+  try {
+    const postsDir = path.join(CONTENT_DIR, 'blog');
+    
+    if (!fs.existsSync(postsDir)) {
+      console.error('Posts directory does not exist:', postsDir);
+      return null;
+    }
+    
+    // Load all authors, categories, and tags first
+    const authorMap = loadAuthors();
+    const categoryMap = loadCategories();
+    const tagMap = loadTags();
+    
+    // Get all post files
+    const postFiles = fs.readdirSync(postsDir);
+    let targetFile = null;
+    
+    // First try: Check if there's a file with a matching filename
+    for (const filename of postFiles) {
+      if ((filename === `${slug}.md`) || (filename === `${slug}.mdx`)) {
+        targetFile = filename;
+        break;
+      }
+    }
+    
+    // Second try: If no file matches by name, check frontmatter slugs
+    if (!targetFile) {
+      console.log(`No file with name ${slug}.md found, checking frontmatter slugs...`);
+      
+      for (const filename of postFiles) {
+        if (!filename.endsWith('.md') && !filename.endsWith('.mdx')) {
+          continue;
+        }
+        
+        const filePath = path.join(postsDir, filename);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const { data: frontmatter } = matter(fileContent);
+        
+        if (frontmatter.slug === slug) {
+          console.log(`Found matching frontmatter slug in file: ${filename}`);
+          targetFile = filename;
+          break;
+        }
+      }
+    }
+    
+    if (!targetFile) {
+      console.error(`No post found with slug: ${slug} (checked both filenames and frontmatter)`);
+      return null;
+    }
+    
+    const filePath = path.join(postsDir, targetFile);
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const { data: frontmatter, content } = matter(fileContent);
+    
+    // Skip drafts unless we're in development
+    if (frontmatter.draft && process.env.CONTEXT !== 'development') {
+      return null;
+    }
+    
+    // Get the markdown content
+    let markdownContent = '';
+    if (frontmatter.html_content) {
+      // If html_content exists in frontmatter, use that as markdown
+      markdownContent = frontmatter.html_content;
+    } else {
+      // Otherwise use the content from the markdown file
+      markdownContent = content;
+    }
+
+    // Process relative image paths to absolute URLs
+    const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
+
+    // Convert markdown to HTML
+    const htmlContent = marked.parse(processedMarkdownContent);
+    
+    // Process author data
+    let authorData = null;
+    if (frontmatter.author && authorMap[frontmatter.author]) {
+      authorData = authorMap[frontmatter.author];
+    } else if (frontmatter.authors && Array.isArray(frontmatter.authors) && frontmatter.authors.length > 0) {
+      // Handle legacy authors array format
+      const authorSlug = frontmatter.authors[0];
+      if (authorMap[authorSlug]) {
+        authorData = authorMap[authorSlug];
+      }
+    }
+    
+    // Process category data
+    let categoryData = null;
+    if (frontmatter.category && categoryMap[frontmatter.category]) {
+      categoryData = categoryMap[frontmatter.category];
+    }
+    
+    // Process tags data
+    let tagData = [];
+    if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
+      tagData = frontmatter.tags
+        .filter(tagSlug => tagMap[tagSlug])
+        .map(tagSlug => tagMap[tagSlug]);
+    }
+    
+    // Enhance the post object with additional fields
+    // Use the filename-based slug for consistency with navigation
+    const fileSlug = targetFile.replace(/\.(md|mdx)$/, '');
+    
+    const post = {
+      ...frontmatter,
+      slug: fileSlug,  // Use filename-based slug for navigation consistency
+      frontmatter_slug: frontmatter.slug,  // Keep the frontmatter slug if it exists
+      url_slug: slug,  // Keep the original requested slug
+      content: htmlContent, // HTML content for rendering
+      html_content: htmlContent, // HTML content
+      markdown_content: markdownContent, // Include raw markdown content
+      // Use the properly formatted author data from the map
+      author: authorData,
+      authors: authorData, // Keep this for backward compatibility
+      category: categoryData,
+      tags: tagData
+    };
+    
+    // Process image fields
+    if (post.feature_image) {
+      if (typeof post.feature_image === 'string') {
+        post.feature_image = { url: processImagePath(post.feature_image) };
+      } else if (typeof post.feature_image === 'object' && post.feature_image.url) {
+        post.feature_image.url = processImagePath(post.feature_image.url);
+      }
+    }
+    
+    return post;
+  } catch (error) {
+    console.error(`Error getting post by slug ${slug}:`, error);
+    return null;
+  }
+}
+
+// Create the handler
+const handler = async (event, context) => {
+  try {
+    // Log the complete event object for debugging
+    console.log('Event path:', event.path);
+    console.log('Event httpMethod:', event.httpMethod);
+    console.log('Event headers:', JSON.stringify(event.headers));
+    
+    // Get query parameters from multiple possible sources
+    const rawQueryString = event.rawQuery || event.rawQueryString || '';
+    const queryParams = event.queryStringParameters || {};
+    
+    console.log('Raw query string:', rawQueryString);
+    console.log('Query parameters object:', JSON.stringify(queryParams));
+    
+    // Try to get the slug from multiple sources
+    let slug = queryParams.slug;
+    
+    // If slug is not found in queryParams, try parsing it from the raw query string
+    if (!slug && rawQueryString) {
+      try {
+        const params = new URLSearchParams(rawQueryString);
+        if (params.has('slug')) {
+          slug = params.get('slug');
+          console.log('Found slug in raw query string:', slug);
+        }
+      } catch (error) {
+        console.error('Error parsing raw query string:', error);
+      }
+    }
+    
+    // If still no slug, check if it's in the URL path
+    if (!slug && event.path) {
+      const pathParts = event.path.split('/');
+      const lastPart = pathParts[pathParts.length - 1];
+      if (lastPart && lastPart !== 'post') {
+        slug = lastPart;
+        console.log('Found slug in path:', slug);
+      }
+    }
+    
+    console.log('Final slug value:', slug);
+    
+    if (!slug) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS'
+        },
+        body: JSON.stringify({ 
+          success: false,
+          error: 'Missing slug parameter',
+          debug: {
+            rawQueryString,
+            queryParams,
+            path: event.path
+          }
+        })
+      };
+    }
+    
+    // Get the post by slug
+    const post = getPostBySlug(slug);
+    
+    if (!post) {
+      return {
+        statusCode: 404,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS'
+        },
+        body: JSON.stringify({ 
+          success: false,
+          error: 'Post not found'
+        })
+      };
+    }
+    
+    // Get all posts for navigation
+    const allPosts = getAllPostsForNavigation();
+    
+    // Find the current post index
+    // Since we're now using filename-based slugs consistently, we should find it by matching the post.slug
+    const currentIndex = allPosts.findIndex(p => p.slug === post.slug);
+    
+    // Get next and previous posts
+    let nextPost = null;
+    let prevPost = null;
+    
+    if (currentIndex !== -1) {
+      // Previous post (newer post in the list)
+      if (currentIndex > 0) {
+        const prevPostData = allPosts[currentIndex - 1];
+        prevPost = {
+          // Use frontmatter slug if available, otherwise use filename slug
+          slug: prevPostData.frontmatter_slug || prevPostData.slug,
+          title: prevPostData.title
+        };
+      }
+      
+      // Next post (older post in the list)
+      if (currentIndex < allPosts.length - 1) {
+        const nextPostData = allPosts[currentIndex + 1];
+        nextPost = {
+          // Use frontmatter slug if available, otherwise use filename slug
+          slug: nextPostData.frontmatter_slug || nextPostData.slug,
+          title: nextPostData.title
+        };
+      }
+    }
+    
+    // Add navigation data to the post
+    const postWithNavigation = {
+      ...post,
+      navigation: {
+        next: nextPost,
+        previous: prevPost
+      }
+    };
+    
+    // Format the response to match what Webstudio expects
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS'
+      },
+      body: JSON.stringify(postWithNavigation) // Return the post object with navigation
+    };
+  } catch (error) {
+    console.error('Handler error:', error);
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS'
+      },
+      body: JSON.stringify({ 
+        success: false,
+        error: 'Failed to fetch post',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      })
+    };
+  }
+};
+
+// Export the handler
+exports.handler = handler;

@@ -1,8 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const matter = require('gray-matter');
 const marked = require('marked');
 require('dotenv').config();
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
+const DOMPurify = createDOMPurify(new JSDOM('').window);
 
 // Get site URL from environment variables
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
@@ -169,7 +173,7 @@ const posts = blogFiles.map(filename => {
   const processedMarkdownContent = convertRelativePathsToAbsolute(markdownContent);
   
   // Store both markdown and HTML versions
-  const htmlContent = marked.parse(processedMarkdownContent);
+  const htmlContent = DOMPurify.sanitize(marked.parse(processedMarkdownContent));
   
   // Process relationships
   let categoryData = null;
@@ -237,16 +241,38 @@ const posts = blogFiles.map(filename => {
 // Sort posts by date (newest first)
 posts.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
 
-// Create a file with all posts
+// Create a file with all posts (full data for backward compatibility)
 fs.writeFileSync(
   path.join(blogApiDir, 'index.json'),
   JSON.stringify({ posts }, null, 2)
 );
 
+// Create a lightweight posts.json with just metadata for listing
+const postsMetadata = posts.map(post => ({
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt,
+  feature_image: post.feature_image,
+  published_at: post.published_at,
+  category: post.category,
+  tags: post.tags,
+  authors: post.authors
+}));
+
+fs.writeFileSync(
+  path.join(blogApiDir, 'posts.json'),
+  JSON.stringify({
+    posts: postsMetadata,
+    total: posts.length
+  }, null, 2)
+);
+console.log(`Created posts.json with ${postsMetadata.length} posts (metadata only)`);
+
 // Create a function to generate limited post files
 function createLimitedPostsFile(limit) {
-  if (limit > 0 && limit < posts.length) {
-    const limitedPosts = posts.slice(0, limit);
+  if (limit > 0) {
+    // Take up to 'limit' posts, or all posts if there are fewer than the limit
+    const limitedPosts = posts.slice(0, Math.min(limit, posts.length));
     fs.writeFileSync(
       path.join(blogApiDir, `index-${limit}.json`),
       JSON.stringify({ 
@@ -255,7 +281,35 @@ function createLimitedPostsFile(limit) {
         limit: limit 
       }, null, 2)
     );
-    console.log(`Created limited posts file with ${limit} posts: index-${limit}.json`);
+    console.log(`Created limited posts file with ${limitedPosts.length}/${limit} posts: index-${limit}.json`);
+  }
+}
+
+// Create a function to generate paginated post files
+function createPaginatedPostsFile(pageSize, pageNumber) {
+  if (pageSize > 0 && pageNumber > 0) {
+    const startIndex = (pageNumber - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, posts.length);
+    
+    // Only create the page if it has content or it's the first page
+    if (startIndex < posts.length || pageNumber === 1) {
+      const paginatedPosts = posts.slice(startIndex, endIndex);
+      const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
+      
+      fs.writeFileSync(
+        path.join(blogApiDir, `page-${pageNumber}.json`),
+        JSON.stringify({ 
+          posts: paginatedPosts, 
+          total: posts.length,
+          page: pageNumber,
+          pageSize: pageSize,
+          totalPages: totalPages,
+          hasNextPage: pageNumber < totalPages,
+          hasPrevPage: pageNumber > 1
+        }, null, 2)
+      );
+      console.log(`Created paginated posts file: page-${pageNumber}.json with ${paginatedPosts.length} posts`);
+    }
   }
 }
 
@@ -265,13 +319,70 @@ createLimitedPostsFile(3);
 createLimitedPostsFile(5);
 createLimitedPostsFile(10);
 
-// Create individual files for each post
-posts.forEach(post => {
+// Create paginated files (3 posts per page)
+const postsPerPage = 3;
+const totalPages = Math.ceil(posts.length / postsPerPage) || 1; // At least 1 page
+
+// Create paginated files for all pages
+for (let i = 1; i <= totalPages; i++) {
+  createPaginatedPostsFile(postsPerPage, i);
+}
+
+// Also create a default page-1.json for convenience
+if (fs.existsSync(path.join(blogApiDir, 'page-1.json'))) {
+  fs.copyFileSync(
+    path.join(blogApiDir, 'page-1.json'),
+    path.join(blogApiDir, 'index-paginated.json')
+  );
+}
+
+// Create individual files for each post with next/previous navigation
+posts.forEach((post, index) => {
+  const postWithNav = { ...post };
+
+  // Add previous post info (if exists)
+  if (index > 0) {
+    const prevPost = posts[index - 1];
+    postWithNav.previous_post = {
+      slug: prevPost.slug,
+      title: prevPost.title
+    };
+  }
+
+  // Add next post info (if exists)
+  if (index < posts.length - 1) {
+    const nextPost = posts[index + 1];
+    postWithNav.next_post = {
+      slug: nextPost.slug,
+      title: nextPost.title
+    };
+  }
+
   fs.writeFileSync(
     path.join(blogApiDir, `${post.slug}.json`),
-    JSON.stringify(post, null, 2)
+    JSON.stringify(postWithNav, null, 2)
   );
 });
+
+// Create a single posts.json file for the API
+const apiDir = path.join(process.cwd(), 'public', 'api');
+if (!fs.existsSync(apiDir)) {
+  fs.mkdirSync(apiDir, { recursive: true });
+}
+
+const postsFilePath = path.join(apiDir, 'posts.json');
+fs.writeFileSync(
+  postsFilePath,
+  JSON.stringify({ posts }, null, 2)
+);
+console.log(`Created API file at ${postsFilePath} with ${posts.length} posts`);
+
+// Also create a copy in the root for local development
+const localApiDir = path.join(process.cwd(), 'api');
+if (!fs.existsSync(localApiDir)) {
+  fs.mkdirSync(localApiDir, { recursive: true });
+}
+fs.copyFileSync(postsFilePath, path.join(localApiDir, 'posts.json'));
 
 // Generate index.html with environment variables
 const SITE_TITLE = process.env.SITE_TITLE || 'Blog';
@@ -327,6 +438,23 @@ fs.writeFileSync(
   path.join(authorsApiDir, 'index.json'),
   JSON.stringify({ authors }, null, 2)
 );
+
+// Copy _headers and _redirects if they exist (for platform compatibility)
+const headersPath = path.join(process.cwd(), '_headers');
+const redirectsPath = path.join(process.cwd(), '_redirects');
+const publicHeadersPath = path.join(apiRootDir, '_headers');
+const publicRedirectsPath = path.join(apiRootDir, '_redirects');
+
+// Only copy if source files exist and destination doesn't
+if (fs.existsSync(headersPath) && !fs.existsSync(publicHeadersPath)) {
+  fs.copyFileSync(headersPath, publicHeadersPath);
+  console.log('Copied _headers to public directory');
+}
+
+if (fs.existsSync(redirectsPath) && !fs.existsSync(publicRedirectsPath)) {
+  fs.copyFileSync(redirectsPath, publicRedirectsPath);
+  console.log('Copied _redirects to public directory');
+}
 
 // Create a sample post if there are no posts
 if (posts.length === 0) {
@@ -385,7 +513,8 @@ Enjoy blogging!
   
   // Run the build again to process the sample content
   console.log('Re-running build to process sample content...');
-  require('./build.js');
+  // Spawn a new Node process to rerun this script because require() is cached
+  spawnSync('node', [__filename], { stdio: 'inherit' });
   return;
 }
 

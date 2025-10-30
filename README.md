@@ -12,7 +12,8 @@ A straightforward blog setup that connects **Decap CMS** with **Webstudio**. It 
 | Feature images for posts         | Add images to your blog posts                |
 | No coding needed                 | Formatting and layout handled automatically  |
 | Connects to Webstudio            | Posts show up on your Webstudio site         |
-| Free hosting with Netlify        | No servers or databases to manage            |
+| Multi-platform hosting           | Deploy to Netlify or Cloudflare Pages        |
+| Iframe embedding ready           | CMS at `/admin/cms/` for seamless integration|
 | Works on mobile too              | Update content from anywhere                 |
 
 ## Table of Contents
@@ -21,6 +22,7 @@ A straightforward blog setup that connects **Decap CMS** with **Webstudio**. It 
   - [Option B: Direct Deploy](#option-b-direct-deploy-faster-but-limited)
   - [Configure Environment Variables](#configure-environment-variables)
   - [Set Up Authentication](#set-up-authentication)
+- [Fork & Customer Branch Workflow](#fork--customer-branch-workflow)
 - [Documentation](#documentation)
 
 
@@ -33,7 +35,7 @@ Choose the option that works best for you:
 
 > **Why fork first?** Forking gives you your own copy of the repository, allowing you to receive updates, maintain version history, and fully control your content through Git.
 
-1. Click the "Fork" button at the top-right of [this repository](https://github.com/Flagstaff-Builds/DecapCMS-Webstudio)
+1. Click the "Fork" button at the top-right of [this repository](https://github.com/null1979/DecapCMS-Webstudio)
 2. Wait for the forking process to complete
 3. Go to [Netlify](https://app.netlify.com/)
 4. Click "Add new site" → "Import an existing project"
@@ -42,6 +44,7 @@ Choose the option that works best for you:
    - Build command: `npm run build`
    - Publish directory: `public`
 7. Click "Deploy site"
+8. Make sure the `GITHUB_BRANCH` environment variable matches the branch name for each deployment Site  → settings > Build & deploy > Continuous deployment
 
 ### Option B: Direct Deploy (Faster but Limited)
 
@@ -49,7 +52,7 @@ Choose the option that works best for you:
 
 Click the button below to deploy directly to Netlify:
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Flagstaff-Builds/DecapCMS-Webstudio)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/null1979/DecapCMS-Webstudio)
 
 During setup:
 1. Follow the prompts to connect to GitHub
@@ -61,6 +64,22 @@ During setup:
 
 
 ---
+
+## Managing Git Access for Clients
+
+To allow non-technical clients to manage blog content through Decap CMS:
+
+1. Have your client create a GitHub account (they will never need to access it again after the initial setup).
+2. Add them as a **collaborator** to their forked repo (the one connected to their Netlify project).
+3. Invite that same email through **Netlify Identity** for CMS access.
+4. Once accepted, they can log in at `/admin` and edit content directly.
+   - Content changes will be committed to Git automatically.
+
+> ⚠️ Without GitHub access, the client will see a “You don’t have sufficient permissions” error in DecapCMS.
+
+> **Important:** The email you invite to Netlify Identity **must also have write access to the connected GitHub repo**, or publishing will fail.
+---
+
 
 ## Configure Environment Variables
 
@@ -109,12 +128,72 @@ Decap CMS supports different publishing workflows that can be configured using t
 
 You can configure the publish mode by setting the `PUBLISH_MODE` environment variable in your Netlify environment variables or in your local `.env` file.
 
+## Fork & Customer Branch Workflow
+
+This template is designed to support multiple customers with isolated content while receiving template updates:
+
+### How It Works
+1. **Main branch** contains the template with sample data
+2. **Customer branches** contain customer-specific content
+3. **Protected directories** (`/content/` and `/images/uploads/`) prevent merge conflicts
+4. **`.gitattributes` file** ensures customer content is never overwritten during updates
+
+### For New Customers
+1. Fork this repository
+2. Create a customer-specific branch: `git checkout -b customer-yourname`
+3. Configure Netlify to deploy from your customer branch
+4. Customize the sample content or start fresh
+5. All your content changes are isolated to your branch
+
+### Syncing Template Updates
+When updates are available in the original template:
+```bash
+# Add upstream remote (one time)
+git remote add upstream https://github.com/null1979/DecapCMS-Webstudio.git
+
+# Sync updates (periodic)
+git fetch upstream
+git checkout customer-yourname
+git merge upstream/main
+git push
+```
+
+Your content in `/content/` and `/images/uploads/` will be preserved during merges.
+
+For detailed instructions, see [Fork & Sync Workflow Guide](docs/fork-sync-workflow.md).
+
+## Platform Support
+
+This template supports deployment to multiple platforms:
+
+### Netlify (Original)
+- Built-in authentication with Netlify Identity
+- Automatic Git Gateway setup
+- Serverless functions for dynamic configuration
+- See setup instructions above
+
+### Cloudflare Pages (New)
+- Better global performance with Cloudflare CDN
+- Cloudflare Access for authentication and protection
+- Support for `/admin/*` path protection
+- See [Cloudflare Pages Setup Guide](docs/cloudflare-pages-setup.md)
+
+## CMS Access Points
+
+The CMS is available at multiple endpoints for flexibility:
+
+- **Primary (New)**: `/admin/cms/` - Optimized for iframe embedding
+- **Legacy**: `/admin/` - Original location, maintained for backwards compatibility
+- **Local Testing**: `/admin/cms/local.html` or `/admin/local.html`
+
 ## Documentation
 
 For more detailed instructions and guides, please refer to the following documentation:
-- [Content Management Guide](docs/content-management.md)
-- [Webstudio Integration Guide](docs/webstudio-integration.md)
-- [Troubleshooting Guide](docs/troubleshooting.md)
+- [Cloudflare Pages Setup Guide](docs/cloudflare-pages-setup.md) - Deploy to Cloudflare Pages
+- [Fork & Sync Workflow Guide](docs/fork-sync-workflow.md) - Detailed guide for managing customer forks
+- [Content Management Guide](docs/content-management.md) - How to manage blog content
+- [Webstudio Integration Guide](docs/webstudio-integration.md) - Connecting to Webstudio
+- [Troubleshooting Guide](docs/troubleshooting.md) - Common issues and solutions
 
 ## Need Help?
 

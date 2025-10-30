@@ -1,0 +1,13 @@
+# Protect content and uploads during merges
+# This ensures customer content is never overwritten when merging template updates
+
+# Always keep the current branch's version of content and uploads
+/content/** merge=ours
+/images/uploads/** merge=ours
+
+# For binary files, ensure they're treated as binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
